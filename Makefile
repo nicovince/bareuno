@@ -54,4 +54,7 @@ $(BUILD_DIR)/$(TARGET_NAME).elf: $(OBJS)
 %.hex: %.elf
 	$(OBJCOPY) -O ihex -R .eeprom $< $@
 	
+	
+flash: $(TARGET)
+	avrdude -F -V -c arduino -p ATMEGA328P -P /dev/ttyACM0 -b 115200 -U flash:w:$(TARGET)
 print-%  : ; @echo $* = $($*)
