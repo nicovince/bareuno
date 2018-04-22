@@ -8,7 +8,6 @@ int main(void)
     BOARD_PIN13_PORT &= ~_BV(BOARD_PIN13_PIN);
 
     setup_usart(BAUD_9600);
-    uint32_t cnt = 0;
 
     uint8_t c='0';
     while(1)

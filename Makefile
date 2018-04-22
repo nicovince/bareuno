@@ -33,10 +33,10 @@ SRC+=usart.c
 OBJS=$(addprefix $(BUILD_DIR)/, $(subst .c,.o,$(SRC)))
 
 TARGET_NAME=bareuno
-TARGET=$(BUILD_DIR)/$(TARGET_NAME).hex
+TARGET=$(BUILD_DIR)/$(TARGET_NAME).elf
 
 all: $(TARGET)
-	
+
 .PHONY: clean
 
 clean:
@@ -44,18 +44,18 @@ clean:
 
 $(BUILD_DIR):
 	mkdir -p $(BUILD_DIR)
-	
-$(BUILD_DIR)/%.o: %.c $(BUILD_DIR)
+
+$(BUILD_DIR)/%.o: %.c | $(BUILD_DIR)
 	$(CC) $(CFLAGS) -o $@ -c $<
-	
-	
+
+
 $(BUILD_DIR)/$(TARGET_NAME).elf: $(OBJS)
 	$(CC) $(LDFLAGS) $(OBJS) -o $@
-	
+
 %.hex: %.elf
 	$(OBJCOPY) -O ihex -R .eeprom $< $@
-	
-	
+
+
 flash: $(TARGET)
 	avrdude -F -V -c arduino -p ATMEGA328P -P /dev/ttyACM0 -b 115200 -U flash:w:$(TARGET)
 print-%  : ; @echo $* = $($*)
