@@ -28,6 +28,7 @@ SRCDIR=./src
 vpath %.c $(SRCDIR)
 
 SRC =main.c
+SRC+=usart.c
 
 OBJS=$(addprefix $(BUILD_DIR)/, $(subst .c,.o,$(SRC)))
 
