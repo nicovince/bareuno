@@ -9,7 +9,6 @@ CFLAGS+=-ffunction-sections
 CFLAGS+=-fdata-sections
 CFLAGS+=-mmcu=atmega328p
 CFLAGS+=-DF_CPU=16000000L
-CFLAGS+=-MMD
 CFLAGS+=-DUSB_VID=null
 CFLAGS+=-DUSB_PID=null
 CFLAGS+=-DARDUINO=105
@@ -31,6 +30,7 @@ SRC =main.c
 SRC+=usart.c
 
 OBJS=$(addprefix $(BUILD_DIR)/, $(subst .c,.o,$(SRC)))
+DEPS=$(addprefix $(BUILD_DIR)/, $(subst .c,.d,$(SRC)))
 
 TARGET_NAME=bareuno
 TARGET=$(BUILD_DIR)/$(TARGET_NAME).elf
@@ -44,6 +44,11 @@ clean:
 
 $(BUILD_DIR):
 	mkdir -p $(BUILD_DIR)
+
+$(BUILD_DIR)/%.d : %.c | $(BUILD_DIR)
+	$(CC) -MM $(CFLAGS) -c $< |sed 's,\(.*\)\.o[ :]*,$(BUILD_DIR)/\1.o $(BUILD_DIR)/\1.d : ,g' > $@
+
+-include $(DEPS)
 
 $(BUILD_DIR)/%.o: %.c | $(BUILD_DIR)
 	$(CC) $(CFLAGS) -o $@ -c $<
