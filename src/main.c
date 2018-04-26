@@ -11,15 +11,17 @@ int main(void)
 
     setup_usart(BAUD_9600);
 
-    uint8_t c='0';
-    uint8_t buf[] = {'0', '\r', '\n'};
+    //uint8_t buf[] = {'0', '\r', '\n'};
     while(1)
     {
-        buf[0]++;
-        usart_write(buf, 3);
-        if (buf[0] == 'Z') {
-            buf[0] = '0';
+        uint8_t c;
+        size_t sz = usart_read(&c, 1);
+        if (sz == 0)
+            continue;
+        if (c == 'a') {
+            sbi(BOARD_PIN13_TOGGLE_REG, BOARD_PIN13_TOGGLE_BIT);
         }
+        usart_write(&c, 1);
     }
     return 0;
 }

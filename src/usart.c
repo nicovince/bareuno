@@ -9,8 +9,8 @@
 #define RX_FIFO_SIZE 32
 fifo_t tx_fifo;
 uint8_t tx_array[TX_FIFO_SIZE];
-//fifo_t rx_fifo;
-//uint8_t rx_array[RX_FIFO_SIZE];
+fifo_t rx_fifo;
+uint8_t rx_array[RX_FIFO_SIZE];
 
 void setup_usart(baudrate_t baudrate)
 {
@@ -28,7 +28,8 @@ void setup_usart(baudrate_t baudrate)
 
     /* Setup fifos */
     init_fifo(&tx_fifo, sizeof(uint8_t), TX_FIFO_SIZE, tx_array);
-    //init_fifo(&rx_fifo, sizeof(uint8_t), RX_FIFO_SIZE, rx_array);
+    init_fifo(&rx_fifo, sizeof(uint8_t), RX_FIFO_SIZE, rx_array);
+    sbi(UCSR0B, RXCIE0);
 }
 
 ISR(USART_UDRE_vect)
@@ -43,7 +44,7 @@ ISR(USART_UDRE_vect)
     }
 }
 
-int usart_write(uint8_t *buf, size_t len)
+size_t usart_write(uint8_t *buf, size_t len)
 {
     for (size_t i = 0; i < len; ++i)
     {
@@ -61,6 +62,26 @@ int usart_write(uint8_t *buf, size_t len)
         }
     }
     return len;
+}
+
+ISR(USART_RX_vect)
+{
+    /* Read data from DR register */
+    push(&rx_fifo, &UDR0);
+    if (is_full(&rx_fifo))
+    {
+        sbi(BOARD_PIN13_PORT, BOARD_PIN13_PIN);
+    }
+}
+
+size_t usart_read(uint8_t *buf, size_t len)
+{
+    size_t cnt = 0;
+    while (len-- && (!is_empty(&rx_fifo)))
+    {
+        pop(&rx_fifo, &buf[cnt++]);
+    }
+    return cnt;
 }
 
 int usart_putchar(char c)
