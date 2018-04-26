@@ -1,6 +1,7 @@
 CC=avr-gcc
 OBJCOPY=avr-objcopy
 SIZE=avr-size
+NM=avr-nm
 
 CFLAGS =-g
 CFLAGS =-std=c11
@@ -65,6 +66,12 @@ $(BUILD_DIR)/$(TARGET_NAME).elf: $(OBJS)
 	$(OBJCOPY) -O ihex -R .eeprom $< $@
 
 
+.PHONY: flash
 flash: $(TARGET)
 	avrdude -F -V -c arduino -p ATMEGA328P -P /dev/ttyACM0 -b 115200 -U flash:w:$(TARGET)
+	
+.PHONY: symbols_size
+symbols_size: $(TARGET)
+	$(NM) --print-size --size-sort --radix=d --synthetic $<
+	
 print-%  : ; @echo $* = $($*)
