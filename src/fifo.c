@@ -27,7 +27,6 @@ uint8_t push(fifo_t * handle, const void * elt)
         return -1;
     }
     uint16_t byte_offset = handle->elt_size * handle->wr_idx;
-    printf("byte offset : %d\n", byte_offset);
     memcpy(handle->array + byte_offset, elt, handle->elt_size);
     handle->wr_idx = next;
     return 0;
