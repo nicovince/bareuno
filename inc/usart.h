@@ -1,5 +1,8 @@
 #ifndef __USART_H__
 #define __USART_H__
+#include <stddef.h>
+#include <stdint.h>
+
 typedef enum baudrate_e {
     BAUD_9600=9600,
     BAUD_57600=57600
@@ -28,5 +31,6 @@ typedef enum baudrate_e {
 void setup_usart(baudrate_t baudrate);
 int usart_putchar(char c);
 void usart_putchar_block(unsigned char c);
+int usart_write(uint8_t *buf, size_t len);
 
 #endif // __USART_H__

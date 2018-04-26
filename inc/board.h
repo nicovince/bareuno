@@ -1,6 +1,7 @@
 #include <avr/io.h>
 
 #define sbi(sfr, bit) (_SFR_BYTE(sfr) |= _BV(bit))
+#define cbi(sfr, bit) (_SFR_BYTE(sfr) &= ~_BV(bit))
 
 #define BOARD_PIN0_MCU_PORT PORTD
 #define BOARD_PIN0_MCU_PIN  PORTD0
