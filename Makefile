@@ -1,7 +1,9 @@
 CC=avr-gcc
 OBJCOPY=avr-objcopy
+SIZE=avr-size
 
 CFLAGS =-g
+CFLAGS =-std=c11
 CFLAGS+=-Os
 CFLAGS+=-Wall
 CFLAGS+=-fno-exceptions
@@ -57,6 +59,7 @@ $(BUILD_DIR)/%.o: %.c | $(BUILD_DIR)
 
 $(BUILD_DIR)/$(TARGET_NAME).elf: $(OBJS)
 	$(CC) $(LDFLAGS) $(OBJS) -o $@
+	$(SIZE) $@
 
 %.hex: %.elf
 	$(OBJCOPY) -O ihex -R .eeprom $< $@
