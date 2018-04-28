@@ -32,6 +32,7 @@ vpath %.c $(SRCDIR)
 SRC =main.c
 SRC+=usart.c
 SRC+=fifo.c
+SRC+=slip.c
 
 OBJS=$(addprefix $(BUILD_DIR)/, $(subst .c,.o,$(SRC)))
 DEPS=$(addprefix $(BUILD_DIR)/, $(subst .c,.d,$(SRC)))
