@@ -67,7 +67,7 @@ size_t usart_write(uint8_t *buf, size_t len)
 ISR(USART_RX_vect)
 {
     /* Read data from DR register */
-    push(&rx_fifo, &UDR0);
+    push(&rx_fifo, (void *)&UDR0);
     if (is_full(&rx_fifo))
     {
         sbi(BOARD_PIN13_PORT, BOARD_PIN13_PIN);
