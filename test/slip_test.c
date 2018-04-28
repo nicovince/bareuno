@@ -25,7 +25,14 @@ bool check_unpack(slip_payload_t* ref, uint8_t *raw_slip_payload)
     unpack_slip_payload(raw_slip_payload, &slip_unpacked);
     print_slip_payload(ref);
     print_slip_payload(&slip_unpacked);
-    return false;
+    
+    bool res = true;
+    res &= (ref->pid == slip_unpacked.pid);
+    res &= (ref->seq == slip_unpacked.seq);
+    res &= (ref->len == slip_unpacked.len);
+    res &= !memcmp(ref->data, slip_unpacked.data, ref->len);
+    res &= (ref->crc == slip_unpacked.crc);
+    return res;
 }
 
 int main(int argc, char** argv)
@@ -45,7 +52,8 @@ int main(int argc, char** argv)
     printf("%s : %d\n", arduino, pid);
     uint16_t slip_payload_size = pack_slip_payload(&slip_payload, raw_slip_payload);
     
-    check_unpack(&slip_payload, raw_slip_payload);
+    bool res = check_unpack(&slip_payload, raw_slip_payload);
+    printf("check_unpack: %d\n", res);
 
     uint8_t slip_size = slip_encode(raw_slip_payload, slip_buffer, slip_payload_size);
     
