@@ -97,7 +97,7 @@ int16_t slip_encode(const uint8_t *src, uint8_t *dst, int16_t len)
     dst[dst_idx++] = SLIP_END;
     return dst_idx;
 }
-#ifndef F_CPU
+#if 0
 void print_slip_status(slip_decoder_t *slip_handle);
 void process_slip_frame(slip_decoder_t *slip_handle, uint8_t *f, uint8_t n);
 void print_slip_status(slip_decoder_t *slip_handle)
