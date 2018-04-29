@@ -72,10 +72,10 @@ int16_t slip_decode(slip_decoder_t *slip_handle, uint8_t b)
 
 int16_t slip_encode(const uint8_t *src, uint8_t *dst, int16_t len)
 {
-    
+
     int16_t dst_idx = 0;
     dst[dst_idx++] = SLIP_END;
-    
+
     for (int16_t i = 0; i < len; ++i)
     {
 
@@ -93,7 +93,7 @@ int16_t slip_encode(const uint8_t *src, uint8_t *dst, int16_t len)
         {
             dst[dst_idx++] = src[i];
         }
-    } 
+    }
     dst[dst_idx++] = SLIP_END;
     return dst_idx;
 }
@@ -119,7 +119,7 @@ int main(void)
     process_slip_frame(&slip, f2, sizeof(f2));
     process_slip_frame(&slip, f3, sizeof(f3));
     process_slip_frame(&slip, f4, sizeof(f4));
-    
+
 }
 
 void process_slip_frame(slip_decoder_t *slip_handle, uint8_t *f, uint8_t n)
@@ -138,14 +138,14 @@ void process_slip_frame(slip_decoder_t *slip_handle, uint8_t *f, uint8_t n)
                 {
                     printf("[%d]:%02X\n", j, (unsigned int)slip_handle->buf[j]);
                 }
-                
+
             }
             int16_t n = slip_encode(slip_handle->buf, buf_encoded, slip_handle->idx);
             for (int i = 0; i < n; ++i)
             {
                 printf("%02X\n", buf_encoded[i]);
             }
-    
+
             reset_slip_decoder(slip_handle);
         }
     }
