@@ -9,6 +9,7 @@
 #define LEN_OFFSET 2
 #define DATA_OFFSET 3
 #define CRC_SIZE 2
+#pragma pack(push, 1)
 typedef struct {
     uint8_t pid; // Primitive id
     uint8_t seq; // sequence number
@@ -16,6 +17,7 @@ typedef struct {
     uint8_t data[MAX_SLIP_PAYLOAD-DATA_OFFSET-CRC_SIZE];
     uint16_t crc; // CRC16-CCITT
 } slip_payload_t;
+#pragma pack(pop)
 
 uint16_t pack_slip_payload(slip_payload_t *slip_payload, uint8_t *raw_slip_payload);
 int8_t unpack_slip_payload(uint8_t *raw_slip_payload, slip_payload_t *slip_payload);
