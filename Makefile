@@ -34,6 +34,7 @@ SRC+=usart.c
 SRC+=fifo.c
 SRC+=slip.c
 SRC+=slip_payload.c
+SRC+=gpio.c
 
 OBJS=$(addprefix $(BUILD_DIR)/, $(subst .c,.o,$(SRC)))
 DEPS=$(addprefix $(BUILD_DIR)/, $(subst .c,.d,$(SRC)))

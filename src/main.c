@@ -4,6 +4,8 @@
 #include "usart.h"
 #include "slip.h"
 #include "slip_payload.h"
+#include "gpio.h"
+
 slip_decoder_t slip;
 uint8_t slip_buffer[128];
 uint8_t slip_encoded[256];
@@ -36,9 +38,9 @@ int main(void)
             int8_t crc_ok = unpack_slip_payload(slip.buf, &slip_payload);
             /* TODO Check length of payload data is lesser than slip message length */
             if (!crc_ok) {
-                sbi(BOARD_PIN13_PORT, BOARD_PIN13_PIN);
+                board_pin_set(13);
             } else if (slip_payload.pid == 6) {
-                sbi(BOARD_PIN13_TOGGLE_REG, BOARD_PIN13_TOGGLE_BIT);
+                board_pin_clear(13);
             }
             reset_slip_decoder(&slip);
             uint16_t slip_payload_size = pack_slip_payload(&slip_payload, raw_slip_payload);
