@@ -39,6 +39,10 @@ bool check_unpack(slip_payload_t* ref, uint8_t *raw_slip_payload)
 
 int main(int argc, char** argv)
 {
+    slip_decoder_t slip;
+    uint8_t slip_buf[255];
+    init_slip_decoder(&slip, slip_buf, 255);
+
     uint8_t raw_slip_payload[MAX_SLIP_PAYLOAD];
     uint8_t slip_buffer[2*MAX_SLIP_PAYLOAD];
     char * arduino = argv[1];
@@ -79,8 +83,21 @@ int main(int argc, char** argv)
     while(1)
     {
         uint8_t b;
-        read(fd, &b, 1);
+        int16_t slip_payload_size;
+
+        ssize_t sz = read(fd, &b, 1);
         printf("%02X\n", b);
+        if (sz == 1) {
+            slip_payload_size = slip_decode(&slip, b);
+
+            if (slip_payload_size >= 0)
+            {
+                int8_t crc_ok = unpack_slip_payload(slip.buf, &slip_payload);
+                printf("crc ok: %d\n", crc_ok);
+                print_slip_payload(&slip_payload);
+                reset_slip_decoder(&slip);
+            }
+        }
     }
     return 0;
 }
