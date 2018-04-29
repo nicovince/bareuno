@@ -29,14 +29,15 @@ int main(void)
                 /* Reset empty message */
                 reset_slip_decoder(&slip);
             }
-        };
+        }
         if ((sz != 0) && (slip_size > 0))
         {
             slip_payload_t slip_payload;
-            unpack_slip_payload(slip.buf, &slip_payload);
+            int8_t crc_ok = unpack_slip_payload(slip.buf, &slip_payload);
             /* TODO Check length of payload data is lesser than slip message length */
-            if (slip_payload.pid == 6)
-            {
+            if (!crc_ok) {
+                sbi(BOARD_PIN13_PORT, BOARD_PIN13_PIN);
+            } else if (slip_payload.pid == 6) {
                 sbi(BOARD_PIN13_TOGGLE_REG, BOARD_PIN13_TOGGLE_BIT);
             }
             reset_slip_decoder(&slip);
@@ -45,13 +46,6 @@ int main(void)
             usart_write(slip_encoded, tx_slip_size);
 
         }
-#if 0
-        if (sz == 0)
-            continue;
-        if (c == 'a') {
-            sbi(BOARD_PIN13_TOGGLE_REG, BOARD_PIN13_TOGGLE_BIT);
-        }
-#endif
     }
     return 0;
 }

@@ -57,6 +57,10 @@ int main(int argc, char** argv)
     bool res = check_unpack(&slip_payload, raw_slip_payload);
     printf("check_unpack: %d\n", res);
     print_slip_payload(&slip_payload);
+    if (pid == 7) {
+        // Corrupt crc
+        raw_slip_payload[slip_payload_size-1] = 0;
+    }
 
     /* Send Slip buffer */
     uint8_t slip_size = slip_encode(raw_slip_payload, slip_buffer, slip_payload_size);
