@@ -39,3 +39,17 @@ uint8_t board_pin_clear(uint8_t board_pin)
     }
     return 1;
 }
+
+uint8_t board_pin_toggle(uint8_t board_pin)
+{
+    uint8_t bit = board_pin_to_port_pin(board_pin);
+    if (bit != UINT8_MAX)
+    {
+        if (board_pin < 8) {
+            (_SFR_BYTE(PIND)) |= bit;
+        } else if (board_pin <= MAX_BOARD_OUTPUT_PINS)
+            (_SFR_BYTE(PINB)) |= bit;
+        return 0;
+    }
+    return 1;
+}
