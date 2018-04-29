@@ -55,10 +55,14 @@ size_t usart_write(uint8_t *buf, size_t len)
         /* Enable data register empty interrupt */
         sbi(UCSR0B, UDRIE0);
 
+        //TODO We should not have to check tx_fifo is not empty as we just
+        //pushed into it, we are probably entering the irq from somewhere... 
         if (UCSR0A & _BV(UDRE0)) {
-            uint8_t data;
-            pop(&tx_fifo, &data);
-            UDR0 = data;
+            if (!is_empty(&tx_fifo)) {
+                uint8_t data;
+                pop(&tx_fifo, &data);
+                UDR0 = data;
+            }
         }
     }
     return len;
@@ -67,11 +71,8 @@ size_t usart_write(uint8_t *buf, size_t len)
 ISR(USART_RX_vect)
 {
     /* Read data from DR register */
-    push(&rx_fifo, (void *)&UDR0);
-    if (is_full(&rx_fifo))
-    {
-        sbi(BOARD_PIN13_PORT, BOARD_PIN13_PIN);
-    }
+    uint8_t data = UDR0;
+    push(&rx_fifo, &data);
 }
 
 size_t usart_read(uint8_t *buf, size_t len)
