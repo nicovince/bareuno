@@ -5,6 +5,7 @@
 #include "slip.h"
 #include "slip_payload.h"
 #include "gpio.h"
+#include "tim.h"
 
 slip_decoder_t slip;
 uint8_t slip_buffer[128];
@@ -23,11 +24,24 @@ void send_pid(uint8_t pid)
     usart_write(slip_encoded, tx_slip_size);
 }
 
+void send_slip_msg(slip_payload_t * msg)
+{
+    uint16_t slip_payload_size = pack_slip_payload(msg, raw_slip_payload);
+    uint8_t tx_slip_size = slip_encode(raw_slip_payload, slip_encoded, slip_payload_size);
+    usart_write(slip_encoded, tx_slip_size);
+}
+
 int main(void)
 {
     sei();
     board_pin_set_output(13);
     int16_t slip_size;
+
+    /* setup timer */
+    enable_tim0();
+    set_tim0_prescaler(TIM_PRESCALING_DIV1024);
+    enable_tim0_irq((1 << TOIE0));
+
 
     setup_usart(BAUD_9600);
     init_slip_decoder(&slip, slip_buffer, 128);
@@ -51,7 +65,11 @@ int main(void)
                 } else if (slip_payload.pid == 6) {
                     send_pid(0xFF);
                     board_pin_toggle(13);
+                } else if (slip_payload.pid == 1) {
+                    get_tim0_status(&slip_payload);
+                    send_slip_msg(&slip_payload);
                 }
+
                 reset_slip_decoder(&slip);
             }
         }
