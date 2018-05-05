@@ -41,6 +41,7 @@ int main(void)
     enable_tim0();
     set_tim0_prescaler(TIM_PRESCALING_DIV1024);
     enable_tim0_irq((1 << TOIE0));
+    set_tim0_ov_max_cnt(get_tim0_freq());
 
 
     setup_usart(BAUD_9600);

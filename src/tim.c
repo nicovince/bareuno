@@ -3,7 +3,18 @@
 #include <string.h>
 #include "tim.h"
 #include "gpio.h"
-#include "slip_payload.h"
+
+static uint32_t tim0_ov_max_cnt;
+
+void set_tim0_ov_max_cnt(uint32_t val)
+{
+    tim0_ov_max_cnt = val;
+}
+
+uint32_t get_tim0_ov_max_cnt(void)
+{
+    return tim0_ov_max_cnt;
+}
 
 void enable_tim0(void)
 {
@@ -48,14 +59,10 @@ uint32_t get_tim0_cnt_freq(void)
     return 0;
 }
 
-uint32_t get_tim0_freq(void)
+uint32_t get_8bit_tim_freq(uint32_t cnt_freq, uint8_t mode, uint8_t ocr_ch_a)
 {
-    uint8_t mode = (((TCCR0A > TIM0_WGM10_POS) & TIM0_WGM10_MASK)
-                    | ((TCCR0B & (1 << WGM02)) >> WGM02 ));
-    uint32_t cnt_freq = get_tim0_cnt_freq();
-    uint32_t tim_freq;
-    uint8_t top = 0xFF;
-
+    uint8_t top;
+    uint32_t tim_freq = 0xDEADBEEF;
     switch(mode) {
     case TIM0_WGM_NORMAL:
         top = 0xFF;
@@ -70,21 +77,34 @@ uint32_t get_tim0_freq(void)
         tim_freq = cnt_freq / (1 + top);
         break;
     case TIM0_WGM_PWM_TOP_OCR:
-        top = 0xFF;
+        top = ocr_ch_a;
         tim_freq = cnt_freq / (2*(top-1));
         break;
     case TIM0_WGM_CTC:
-        top = OCR0A;
-        tim_freq = cnt_freq / (1 + top);
+        top = ocr_ch_a;
+        tim_freq = cnt_freq / (2*(1 + top));
         break;
     case TIM0_WGM_FAST_PWM_TOP_OCR:
-        top = OCR0A;
+        top = ocr_ch_a;
         tim_freq = cnt_freq / (1 + top);
         break;
     default:
         return -1;
     }
     return tim_freq;
+}
+
+uint8_t get_tim0_mode(void)
+{
+    return (((TCCR0A & TIM0_WGM10_MASK) >> TIM0_WGM10_POS)
+            | (((TCCR0B & (1 << WGM02)) >> WGM02 ) << 2));
+}
+
+uint32_t get_tim0_freq(void)
+{
+    uint8_t mode = get_tim0_mode();
+    uint32_t cnt_freq = get_tim0_cnt_freq();
+    return get_8bit_tim_freq(cnt_freq, mode, OCR0A);
 }
 
 void set_tim0_prescaler(uint8_t prescaler)
@@ -99,7 +119,7 @@ void enable_tim0_irq(uint8_t irq_mask)
     TIMSK0 |= (irq_mask);
 }
 
-void clear_tim0_irq(uint8_t irq_mask)
+void disable_tim0_irq(uint8_t irq_mask)
 {
     TIMSK0 &= ~(irq_mask);
 }
@@ -107,7 +127,7 @@ void clear_tim0_irq(uint8_t irq_mask)
 ISR(TIMER0_OVF_vect)
 {
     static uint32_t cnt = 0;
-    if (cnt++ == 61) {
+    if (cnt++ >= tim0_ov_max_cnt) {
 
         board_pin_toggle(13);
         cnt = 0;
@@ -119,6 +139,8 @@ void get_tim0_status(slip_payload_t * msg)
     typedef struct {
         uint32_t tim_freq;
         uint32_t cnt_freq;
+        uint32_t tim8_freq;
+        uint8_t mode;
         uint8_t tccr0a;
         uint8_t tccr0b;
         uint8_t timsk0;
@@ -128,6 +150,8 @@ void get_tim0_status(slip_payload_t * msg)
     tim_status_t status;
     status.tim_freq = get_tim0_freq();
     status.cnt_freq = get_tim0_cnt_freq();
+    status.tim8_freq = get_8bit_tim_freq(get_tim0_cnt_freq(), get_tim0_mode(), OCR0A);
+    status.mode = get_tim0_mode();
     status.tccr0a = TCCR0A;
     status.tccr0b = TCCR0B;
     status.timsk0 = TIMSK0;
