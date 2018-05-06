@@ -39,8 +39,12 @@ int main(void)
 
     /* setup timer */
     enable_tim0();
-    set_tim0_prescaler(TIM_PRESCALING_DIV1024);
     enable_tim0_irq((1 << TOIE0));
+    set_tim0_mode(TIM0_WGM_CTC);
+    set_tim0_com_cha(TIM0_NON_PWM_TOGGLE_OC_MATCH);
+    set_tim0_cfg(comput_tim0_freq_cfg(392));
+    board_pin_set_output(6);
+
     set_tim0_ov_max_cnt(get_tim0_freq());
 
 

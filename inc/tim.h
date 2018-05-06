@@ -63,6 +63,14 @@
 #define TIM2_CS_POS CS20
 #define TIM2_CS_MASK ((1 << CS20) | (1 << CS21) | (1 << CS22))
 
+#define TIM_CTC_FREQ(n, top) (F_CPU/(2*(uint32_t)n*(1+top)))
+#define TIM_CTC_TOP(n, freq) (F_CPU/(2*n*freq) -1)
+
+typedef struct {
+    int8_t shift_prescaler;
+    uint8_t top;
+} tim_cfg_t;
+
 void set_tim0_ov_max_cnt(uint32_t val);
 uint32_t get_tim0_ov_max_cnt(void);
 
@@ -79,6 +87,9 @@ void disable_tim0_irq(uint8_t irq_mask);
 
 void set_tim0_com_cha(uint8_t com);
 void set_tim0_ocra(uint8_t val);
+
+tim_cfg_t comput_tim0_freq_cfg(uint32_t freq);
+void set_tim0_cfg(tim_cfg_t tim_cfg);
 
 void set_tim0_mode(uint8_t mode);
 uint8_t get_tim0_mode(void);

@@ -5,6 +5,7 @@
 #include "gpio.h"
 
 static uint32_t tim0_ov_max_cnt;
+static uint32_t cnt = 0;
 
 void set_tim0_ov_max_cnt(uint32_t val)
 {
@@ -129,6 +130,7 @@ uint32_t get_tim0_freq(void)
 void set_tim0_prescaler(uint8_t prescaler)
 {
     prescaler &= TIM_CS_MASK;
+    TCCR0B &= ~TIM_CS_MASK;
     TCCR0B |= (prescaler << CS00);
     GTCCR |= _BV(PSRSYNC);
 }
@@ -145,7 +147,6 @@ void disable_tim0_irq(uint8_t irq_mask)
 
 ISR(TIMER0_OVF_vect)
 {
-    static uint32_t cnt = 0;
     if (cnt++ >= tim0_ov_max_cnt) {
 
         board_pin_toggle(13);
@@ -153,12 +154,68 @@ ISR(TIMER0_OVF_vect)
     }
 }
 
+tim_cfg_t comput_tim0_freq_cfg(uint32_t freq)
+{
+    tim_cfg_t tim_cfg;
+    tim_cfg.shift_prescaler = 0;
+    if (freq <= TIM_CTC_FREQ(256, 255))
+    {
+        tim_cfg.shift_prescaler = 10;
+    } else if (freq <= TIM_CTC_FREQ(64, 255))
+    {
+        tim_cfg.shift_prescaler = 8;
+    } else if (freq <= TIM_CTC_FREQ(8, 255))
+    {
+        tim_cfg.shift_prescaler = 6;
+    } else if (freq <= TIM_CTC_FREQ(1, 255))
+    {
+        tim_cfg.shift_prescaler = 3;
+    } else if (freq <= TIM_CTC_FREQ(1, 0))
+    {
+        tim_cfg.shift_prescaler = 0;
+    } else
+    {
+        tim_cfg.shift_prescaler = -1;
+    }
+
+    tim_cfg.top = TIM_CTC_TOP((1 << tim_cfg.shift_prescaler), freq);
+    return tim_cfg;
+}
+
+void set_tim0_cfg(tim_cfg_t tim_cfg)
+{
+    uint8_t cs = 0;
+    switch(tim_cfg.shift_prescaler)
+    {
+    case 1:
+        cs = TIM_NO_PRESCALING;
+        break;
+    case 3:
+        cs = TIM_PRESCALING_DIV8;
+        break;
+    case 6:
+        cs = TIM_PRESCALING_DIV64;
+        break;
+    case 8:
+        cs = TIM_PRESCALING_DIV256;
+        break;
+    case 10:
+        cs = TIM_PRESCALING_DIV1024;
+        break;
+    default:
+        cs = TIM_NO_CLK;
+        break;
+    }
+    set_tim0_prescaler(cs);
+    OCR0A = tim_cfg.top;
+}
+
 void get_tim0_status(slip_payload_t * msg)
 {
     typedef struct {
         uint32_t tim_freq;
         uint32_t cnt_freq;
-        uint32_t tim8_freq;
+        uint32_t cnt;
         uint8_t mode;
         uint8_t tccr0a;
         uint8_t tccr0b;
@@ -169,7 +226,7 @@ void get_tim0_status(slip_payload_t * msg)
     tim_status_t status;
     status.tim_freq = get_tim0_freq();
     status.cnt_freq = get_tim0_cnt_freq();
-    status.tim8_freq = get_8bit_tim_freq(get_tim0_cnt_freq(), get_tim0_mode(), OCR0A);
+    status.cnt = cnt;
     status.mode = get_tim0_mode();
     status.tccr0a = TCCR0A;
     status.tccr0b = TCCR0B;
