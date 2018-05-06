@@ -4,23 +4,41 @@
 #include "tim.h"
 #include "gpio.h"
 
-static uint32_t tim0_ov_max_cnt;
-static uint32_t cnt = 0;
+static uint32_t tim0_ov_cnt;
+static uint32_t tim2_ov_cnt;
 
-void set_tim0_ov_max_cnt(uint32_t val)
+uint32_t get_tim0_ov_cnt(void)
 {
-    tim0_ov_max_cnt = val;
+    return tim0_ov_cnt;
+}
+void set_tim0_ov_cnt(uint32_t val)
+{
+    tim0_ov_cnt = val;
+    enable_tim0_irq(TOIE0);
 }
 
-uint32_t get_tim0_ov_max_cnt(void)
+uint32_t get_tim2_ov_cnt(void)
 {
-    return tim0_ov_max_cnt;
+    return tim2_ov_cnt;
 }
+
+void set_tim2_ov_cnt(uint32_t val)
+{
+    tim2_ov_cnt = val;
+    enable_tim2_irq(TOIE2);
+}
+
 
 void enable_tim0(void)
 {
     PRR &= ~_BV(PRTIM0);
 }
+
+void enable_tim2(void)
+{
+    PRR &= ~_BV(PRTIM0);
+}
+
 uint32_t get_shift_prescaler(void)
 {
     uint8_t cs = (TCCR0B & TIM_CS_MASK) >> TIM_CS_POS;
@@ -50,12 +68,57 @@ uint32_t get_shift_prescaler(void)
     return prescaler;
 }
 
+uint32_t get_tim2_shift_prescaler(void)
+{
+    uint8_t cs = (TCCR2B & TIM2_CS_MASK) >> TIM2_CS_POS;
+    uint32_t prescaler;
+    switch(cs)
+    {
+    default:
+    case TIM2_NO_CLK:
+        prescaler = 0;
+        break;
+    case TIM2_NO_PRESCALING:
+        prescaler = 1;
+        break;
+    case TIM2_PRESCALING_DIV8:
+        prescaler = 3;
+        break;
+    case TIM2_PRESCALING_DIV32:
+        prescaler = 5;
+        break;
+    case TIM2_PRESCALING_DIV64:
+        prescaler = 6;
+        break;
+    case TIM2_PRESCALING_DIV128:
+        prescaler = 7;
+        break;
+    case TIM2_PRESCALING_DIV256:
+        prescaler = 8;
+        break;
+    case TIM2_PRESCALING_DIV1024:
+        prescaler = 10;
+        break;
+    }
+    return prescaler;
+}
+
 uint32_t get_tim0_cnt_freq(void)
 {
     uint8_t cs = (TCCR0B & TIM_CS_MASK) >> TIM_CS_POS;
     if (cs != TIM_NO_CLK)
     {
         return F_CPU >> get_shift_prescaler();
+    }
+    return 0;
+}
+
+uint32_t get_tim2_cnt_freq(void)
+{
+    uint8_t cs = (TCCR2B & TIM_CS_MASK) >> TIM_CS_POS;
+    if (cs != TIM_NO_CLK)
+    {
+        return F_CPU >> get_tim2_shift_prescaler();
     }
     return 0;
 }
@@ -108,16 +171,30 @@ void set_tim0_ocra(uint8_t val)
 
 void set_tim0_mode(uint8_t mode)
 {
-    TCCR0A &= ~TIM0_WGM10_MASK;
+    TCCR0A &= ~TIM_WGM_MASK;
     TCCR0A |= ((mode & 0x3) << WGM00);
     TCCR0B &= ~(1 << WGM02);
     TCCR0B |= ((mode & 0x4) >> 2) << WGM02;
 }
 
+void set_tim2_mode(uint8_t mode)
+{
+    TCCR2A &= ~TIM_WGM_MASK;
+    TCCR2A |= ((mode & 0x3) << WGM20);
+    TCCR2B &= ~(1 << WGM22);
+    TCCR2B |= ((mode & 0x4) >> 2) << WGM22;
+}
+
 uint8_t get_tim0_mode(void)
 {
-    return (((TCCR0A & TIM0_WGM10_MASK) >> TIM0_WGM10_POS)
+    return (((TCCR0A & TIM_WGM_MASK) >> TIM_WGM_POS)
             | (((TCCR0B & (1 << WGM02)) >> WGM02 ) << 2));
+}
+
+uint8_t get_tim2_mode(void)
+{
+    return (((TCCR2A & TIM_WGM_MASK) >> TIM_WGM_POS)
+            | (((TCCR2B & (1 << WGM22)) >> WGM22 ) << 2));
 }
 
 uint32_t get_tim0_freq(void)
@@ -125,6 +202,13 @@ uint32_t get_tim0_freq(void)
     uint8_t mode = get_tim0_mode();
     uint32_t cnt_freq = get_tim0_cnt_freq();
     return get_8bit_tim_freq(cnt_freq, mode, OCR0A);
+}
+
+uint32_t get_tim2_freq(void)
+{
+    uint8_t mode = get_tim2_mode();
+    uint32_t cnt_freq = get_tim2_cnt_freq();
+    return get_8bit_tim_freq(cnt_freq, mode, OCR2A);
 }
 
 void set_tim0_prescaler(uint8_t prescaler)
@@ -135,22 +219,48 @@ void set_tim0_prescaler(uint8_t prescaler)
     GTCCR |= _BV(PSRSYNC);
 }
 
+void set_tim2_prescaler(uint8_t prescaler)
+{
+    prescaler &= TIM_CS_MASK;
+    TCCR2B &= ~TIM_CS_MASK;
+    TCCR2B |= (prescaler << CS20);
+    GTCCR |= _BV(PSRSYNC);
+}
+
 void enable_tim0_irq(uint8_t irq_mask)
 {
     TIMSK0 |= (irq_mask);
 }
 
+void enable_tim2_irq(uint8_t irq_mask)
+{
+    TIMSK2 |= (irq_mask);
+}
 void disable_tim0_irq(uint8_t irq_mask)
 {
     TIMSK0 &= ~(irq_mask);
 }
 
+void disable_tim2_irq(uint8_t irq_mask)
+{
+    TIMSK2 &= ~(irq_mask);
+}
+
 ISR(TIMER0_OVF_vect)
 {
-    if (cnt++ >= tim0_ov_max_cnt) {
+    if (tim0_ov_cnt-- == 0)
+    {
+        /* Disable irq */
+        disable_tim0_irq(TOIE0);
+    }
+}
 
-        board_pin_toggle(13);
-        cnt = 0;
+ISR(TIMER2_OVF_vect)
+{
+    if (tim2_ov_cnt-- == 0)
+    {
+        /* Disable irq */
+        disable_tim2_irq(TOIE2);
     }
 }
 
@@ -226,7 +336,7 @@ void get_tim0_status(slip_payload_t * msg)
     tim_status_t status;
     status.tim_freq = get_tim0_freq();
     status.cnt_freq = get_tim0_cnt_freq();
-    status.cnt = cnt;
+    status.cnt = tim0_ov_cnt;
     status.mode = get_tim0_mode();
     status.tccr0a = TCCR0A;
     status.tccr0b = TCCR0B;
@@ -235,17 +345,4 @@ void get_tim0_status(slip_payload_t * msg)
     status.tcnt0 = TCNT0;
     memcpy(msg->data, &status, sizeof(status));
     msg->len = sizeof(status);
-#if 0
-    ((uint32_t *)msg->data)[msg->len] = get_tim0_freq();
-    msg->len += sizeof(uint32_t);
-    msg->data[msg->len] = get_tim0_cnt_freq();
-    msg->len += sizeof(uint32_t);
-    msg->data[msg->len++] = TCCR0A;
-    msg->data[msg->len++] = TCCR0B;
-    msg->data[msg->len++] = TIMSK0;
-    msg->data[msg->len++] = GTCCR;
-    msg->data[msg->len++] = TCNT0;
-    ((uint32_t *)msg->data)[msg->len] = 0xCAFECAFE;
-    msg->len += sizeof(uint32_t);
-#endif
 }
