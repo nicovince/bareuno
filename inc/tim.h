@@ -77,5 +77,11 @@ void set_tim0_prescaler(uint8_t prescaler);
 void enable_tim0_irq(uint8_t irq_mask);
 void disable_tim0_irq(uint8_t irq_mask);
 
+void set_tim0_com_cha(uint8_t com);
+void set_tim0_ocra(uint8_t val);
+
+void set_tim0_mode(uint8_t mode);
+uint8_t get_tim0_mode(void);
+
 void get_tim0_status(slip_payload_t * msg);
 #endif // __TIM_H__

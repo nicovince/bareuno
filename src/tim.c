@@ -94,6 +94,25 @@ uint32_t get_8bit_tim_freq(uint32_t cnt_freq, uint8_t mode, uint8_t ocr_ch_a)
     return tim_freq;
 }
 
+void set_tim0_com_cha(uint8_t com)
+{
+    TCCR0A &= ~((1 << COM0A0) | (1 << COM0A1));
+    TCCR0A |= ((com & 0x3) << COM0A0);
+}
+
+void set_tim0_ocra(uint8_t val)
+{
+    OCR0A = val;
+}
+
+void set_tim0_mode(uint8_t mode)
+{
+    TCCR0A &= ~TIM0_WGM10_MASK;
+    TCCR0A |= ((mode & 0x3) << WGM00);
+    TCCR0B &= ~(1 << WGM02);
+    TCCR0B |= ((mode & 0x4) >> 2) << WGM02;
+}
+
 uint8_t get_tim0_mode(void)
 {
     return (((TCCR0A & TIM0_WGM10_MASK) >> TIM0_WGM10_POS)
