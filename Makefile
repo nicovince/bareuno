@@ -79,3 +79,11 @@ symbols_size: $(TARGET)
 	$(NM) --print-size --size-sort --radix=d --synthetic $<
 	
 print-%  : ; @echo $* = $($*)
+
+AVR_DIR=/usr/lib/avr
+AVR_INC_DIR=$(AVR_DIR)/include
+.PHONY: tags
+tags:
+	ctags -R * $(AVR_INC_DIR)/avr/iom328p.h \
+		$(AVR_INC_DIR)/util \
+		$(AVR_INC_DIR)/compat
