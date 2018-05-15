@@ -116,7 +116,7 @@ int main(void)
             freq_idx = (freq_idx + 1) % (sizeof(ode_a_la_joie)/sizeof(ode_a_la_joie[0]));
             set_tim0_cfg(comput_tim0_freq_cfg(freq[ode_a_la_joie[freq_idx]]));
             /* Rearm 1Hz event */
-            set_tim2_ov_cnt(get_tim2_freq()/2);
+            set_tim2_ov_cnt(get_tim2_freq());
             /* Toggle led */
             board_pin_toggle(13);
         }
@@ -137,6 +137,10 @@ int main(void)
                     board_pin_toggle(13);
                 } else if (slip_payload.pid == 1) {
                     get_tim0_status(&slip_payload);
+                    send_slip_msg(&slip_payload);
+                } else if (slip_payload.pid == 2) {
+                    slip_payload.pid |= 0x80;
+                    slip_payload.len = 0;
                     send_slip_msg(&slip_payload);
                 }
 
