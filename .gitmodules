@@ -1,0 +1,3 @@
+[submodule "tools/genmsg"]
+	path = tools/genmsg
+	url = git@nicov.hd.free.fr:genmsg.git
