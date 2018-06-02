@@ -2,6 +2,7 @@
 #include <stdio.h>
 #endif
 #include "slip.h"
+#include "gpio.h"
 
 #define SLIP_END 0xC0
 #define SLIP_ESC 0xDB
@@ -10,7 +11,7 @@
 
 void init_slip_decoder(slip_decoder_t *slip_handle, uint8_t *buf, uint8_t buf_size)
 {
-    slip_handle->state = SLIP_STORE_INCOMING;
+    slip_handle->state = SLIP_WAIT_END;
     slip_handle->idx = 0;
     slip_handle->buf_size = buf_size;
     slip_handle->buf = buf;
@@ -66,6 +67,13 @@ int16_t slip_decode(slip_decoder_t *slip_handle, uint8_t b)
             /* Store regular byte */
             slip_handle->buf[slip_handle->idx++] = b;
         }
+    }
+
+    /* Check if buffer is full */
+    if (slip_handle->idx == slip_handle->buf_size)
+    {
+        /* Flush everything, once message is complete we will catch a CRC error */
+        slip_handle->idx = 0;
     }
     return -1;
 }
