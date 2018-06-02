@@ -33,5 +33,6 @@ int usart_putchar(char c);
 void usart_putchar_block(unsigned char c);
 size_t usart_write(uint8_t *buf, size_t len);
 size_t usart_read(uint8_t *buf, size_t len);
+int dbg_printf(char const *fmt, ...);
 
 #endif // __USART_H__

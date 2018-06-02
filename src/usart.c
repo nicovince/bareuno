@@ -1,15 +1,19 @@
 #include <avr/io.h>
 #include <avr/interrupt.h>
+#include <stdarg.h>
+#include <string.h>
+#include <stdlib.h>
 
 #include "usart.h"
 #include "fifo.h"
 #include "board.h"
+#include "gpio.h"
 
 #define TX_FIFO_SIZE 32
 #define RX_FIFO_SIZE 32
-fifo_t tx_fifo;
+static fifo_t tx_fifo;
 uint8_t tx_array[TX_FIFO_SIZE];
-fifo_t rx_fifo;
+static fifo_t rx_fifo;
 uint8_t rx_array[RX_FIFO_SIZE];
 
 void setup_usart(baudrate_t baudrate)
@@ -101,4 +105,92 @@ void usart_putchar_block(unsigned char c)
     /* Wait until transmit buffer available */
     while (!(UCSR0A & (1 << UDRE0)));
     UDR0 = c;
+}
+
+size_t usart_write_block(uint8_t *buf, size_t len)
+{
+    for (int i = 0; i < len; ++i)
+    {
+        usart_putchar_block(buf[i]);
+    }
+    return len;
+}
+
+int dbg_printf(char const *fmt, ...)
+{
+    va_list arg;
+    va_start(arg, fmt);
+
+    int int_temp;
+    char char_temp;
+    char *string_temp;
+
+    char ch;
+    int length = 0;
+
+    char buffer[128];
+
+    while ( (ch = *fmt++)) {
+        if ( '%' == ch ) {
+            switch (ch = *fmt++) {
+                /* %% - print out a single %    */
+            case '%':
+                usart_write_block((uint8_t *)'%', 1);
+                length++;
+                break;
+
+                /* %c: print out a character    */
+            case 'c':
+                char_temp = va_arg(arg, int);
+                usart_write_block((uint8_t *)&char_temp, 1);
+                length++;
+                break;
+
+                /* %s: print out a string       */
+            case 's':
+                string_temp = va_arg(arg, char *);
+                usart_write_block((uint8_t *)string_temp, strlen(string_temp));
+                length += strlen(string_temp);
+                break;
+
+                /* %d: print out an int         */
+            case 'd':
+                int_temp = va_arg(arg, int);
+                itoa(int_temp, buffer, 10);
+                usart_write_block((uint8_t *)buffer, strlen(buffer));
+                length += strlen(buffer);
+                break;
+
+                /* %x: print out an int in hex  */
+            case 'x':
+                int_temp = va_arg(arg, int);
+                itoa(int_temp, buffer, 16);
+                usart_write_block((uint8_t *)buffer, strlen(buffer));
+                length += strlen(buffer);
+                break;
+
+#if 0
+            case 'f':
+                double_temp = va_arg(arg, double);
+                ftoa_fixed(buffer, double_temp);
+                usart_write_block(buffer, strlen(buffer));
+                length += strlen(buffer);
+                break;
+
+            case 'e':
+                double_temp = va_arg(arg, double);
+                ftoa_sci(buffer, double_temp);
+                usart_write_block(buffer, strlen(buffer));
+                length += strlen(buffer);
+                break;
+#endif
+            }
+        }
+        else {
+            usart_write_block((uint8_t *)&ch, 1);
+            length++;
+        }
+    }
+    va_end(arg);
+    return length;
 }
