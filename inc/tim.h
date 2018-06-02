@@ -104,5 +104,5 @@ void set_tim2_mode(uint8_t mode);
 uint8_t get_tim0_mode(void);
 uint8_t get_tim2_mode(void);
 
-void get_tim0_status(slip_payload_t * msg);
+void pid_req_tim_status(slip_payload_t * msg);
 #endif // __TIM_H__

@@ -1,0 +1,247 @@
+enums:
+- name: slip_status
+  desc: "List of Slip transaction status error"
+  entries:
+  - entry: slip_unknown_id
+    value: 0
+    desc: "ID is unknown and cannot be processed"
+  - entry: slip_crc_error
+    value: 1
+    desc: "CRC error during transmission"
+  - entry: slip_invalid_len
+    value: 2
+    desc: "Length field does not match payload length received"
+  - entry: slip_invalid_arg
+    value: 3
+    desc: "Invalid Arguments provided"
+
+- name: note_frequencies
+  desc: "Musical notes, from Do to Si, enum value is octave 0's frequency in 10th of Hertz"
+  entries:
+  - entry: freq_do
+    desc: "Do frequency"
+    value: 3270
+  - entry: freq_re_b
+    desc: "re bemol frequency"
+    value: 3465
+  - entry: freq_re
+    desc: "re frequency"
+    value: 3671
+  - entry: freq_mi_b
+    desc: "mi bemol frequency"
+    value: 3889
+  - entry: freq_mi
+    desc: "mi frequency"
+    value: 4120
+  - entry: freq_fa
+    desc: "fa frequency"
+    value: 4365
+  - entry: freq_sol_b
+    desc: "sol bemol frequency"
+    value: 4625
+  - entry: freq_sol
+    desc: "sol frequency"
+    value: 4900
+  - entry: freq_la_b
+    desc: "la bemol frequency"
+    value: 5191
+  - entry: freq_la
+    desc: "la frequency"
+    value: 5500
+  - entry: freq_si_b
+    desc: "si bemol frequency"
+    value: 5827
+  - entry: freq_si
+    desc: "si frequency"
+    value: 6174
+
+- name: note_name
+  desc: "Notes names"
+  entries:
+  - entry: do
+    desc: "Do"
+    value: 0
+  - entry: re_b
+    desc: "re bemol" # do#
+    value: 1
+  - entry: re
+    desc: "re"
+    value: 2
+  - entry: mi_b
+    desc: "mi bemol" # re#
+    value: 3
+  - entry: mi
+    desc: "mi"
+    value: 4
+  - entry: fa
+    desc: "fa"
+    value: 5
+  - entry: sol_b
+    desc: "sol bemol" # fa#
+    value: 6
+  - entry: sol
+    desc: "sol"
+    value: 7
+  - entry: la_b
+    desc: "la bemol" # sol#
+    value: 8
+  - entry: la
+    desc: "la"
+    value: 9
+  - entry: si_b
+    desc: "si bemol" # la#
+    value: 10
+  - entry: si
+    desc: "si"
+    value: 11
+
+- name: note_length
+  desc: "Length of musical notes (using french names)"
+  entries:
+  - entry: carre
+    value: 0
+    desc: "Twice the length of a ronde"
+  - entry: ronde
+    value: 1
+    desc: "Twice the length of a blanche"
+  - entry: blanche
+    value: 2
+    desc: "Twice the length of a noire"
+  - entry: noire
+    value: 3
+    desc: "Twice the length of a croche"
+  - entry: croche
+    value: 4
+    desc: "Twice the length of a double croche"
+  - entry: double_croche
+    value: 5
+    desc: "Twice the length of a triple croche"
+  - entry: triple_croche
+    value: 6
+    desc: "Twice the length of a quadruple croche"
+  - entry: quadruple_croche
+    value: 7
+    desc: "Half the length of a triple croche"
+
+- name: tim_wgm
+  desc: "Timer Waveform Generation Mode"
+  entries:
+  - entry: tim_wgm_normal
+    value: 0
+    desc: "Normal Mode: Count up, no clear, top value = 0xFF"
+  - entry: tim_wgm_pwm
+    value: 1
+    desc: "Double Slope, phase correct pwm generation, top value = 0xFF"
+  - entry: tim_wgm_ctc
+    value: 2
+    desc: "Single Slope, clear counter and toggle output on OCR match, top value = OCRnA"
+  - entry: tim_wgm_fast_pwm
+    value: 3
+    desc: "Single Slope, pwm generation, top value = 0xFF"
+  - entry: tim_wgm_pwm_top_ocr
+    value: 5
+    desc: "Double Slope, phase correct pwm generation, top value = OCRnA"
+  - entry: tim_wgm_fast_pwm_top_ocr
+    value: 7
+    desc: "Single Slope, pwm generation, toggle on OCRnx match, top value = OCRnA"
+
+- name: tim_id
+  desc: "Timer ids"
+  entries:
+  - entry: tim0
+    value: 0
+    desc: "Timer 0 (8bit)"
+  - entry: tim1
+    value: 1
+    desc: "Timer 1 (16bit)"
+  - entry: tim2
+    value: 2
+    desc: "Timer 2 (8bit)"
+
+
+types:
+- name: tim_status
+  desc: "timer configuration"
+  fields:
+  - name: tim_freq
+    type: uint32_t
+    desc: "Timer frequency"
+  - name: cnt_freq
+    type: uint32_t
+    desc: "Timer counter frequency"
+  - name: cnt
+    type: uint32_t
+    desc: "Counter decreased on irq value"
+  - name: mode
+    enum: tim_wgm
+    type: uint8_t
+    desc: "Timer Waveform Generation Mode"
+  - name: tccra
+    type: uint8_t
+    desc: "Timer control register A"
+  - name: tccrb
+    type: uint8_t
+    desc: "Timer control register B"
+  - name: timsk
+    type: uint8_t
+    desc: "Timer interrupt mask register"
+  - name: gtccr
+    type: uint8_t
+    desc: "General timer control register"
+  - name: tcnt
+    type: uint8_t
+    desc: "Timer counter value"
+
+
+messages:
+- name: debug
+  id: 0
+  desc: "Debug Message"
+  fields:
+  - name: data
+    type: uint8_t[]
+    desc: "Debug data, usually ascii string"
+- name: slip_error
+  id: 0x80
+  desc: "Error status of slip transaction"
+  fields:
+  - name: pid
+    type: uint8_t
+    desc: "Message ID for which the error is reported (valid only if status does not report a CRC error)"
+  - name: error
+    type: uint8_t
+    enum: slip_status
+    desc: "Error which occured in the slip transaction"
+
+- name: note
+  id: 1
+  desc: "Music note"
+  fields:
+  - name: name
+    type: uint8_t
+    enum: note_name
+    desc: "Note index"
+  - name: octave
+    type: uint8_t
+    desc: "Octave of the note (0-7)"
+  - name: length
+    type: uint8_t
+    enum: note_length
+    desc: "Length of musical note (black, white, ...)"
+
+- name: req_tim_status
+  id: 2
+  desc: "Request timer status"
+  fields:
+  - name: timer_id
+    type: uint8_t
+    enum: tim_id
+    desc: "Timer id"
+
+- name: ack_tim_status
+  id: 0x82
+  desc: "Timer status requested"
+  fields:
+  - name: status
+    type: tim_status
+    desc: "Timer status"

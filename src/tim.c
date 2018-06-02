@@ -3,6 +3,7 @@
 #include <string.h>
 #include "tim.h"
 #include "gpio.h"
+#include "messages.h"
 
 static uint32_t tim0_ov_cnt;
 static uint32_t tim2_ov_cnt;
@@ -320,29 +321,107 @@ void set_tim0_cfg(tim_cfg_t tim_cfg)
     OCR0A = tim_cfg.top;
 }
 
-void get_tim0_status(slip_payload_t * msg)
+tim_cfg_t comput_tim2_freq_cfg(uint32_t freq)
 {
-    typedef struct {
-        uint32_t tim_freq;
-        uint32_t cnt_freq;
-        uint32_t cnt;
-        uint8_t mode;
-        uint8_t tccr0a;
-        uint8_t tccr0b;
-        uint8_t timsk0;
-        uint8_t gtccr;
-        uint8_t tcnt0;
-    } tim_status_t;
+    tim_cfg_t tim_cfg;
+    tim_cfg.shift_prescaler = 0;
+    if (freq <= TIM_CTC_FREQ(256, 255))
+    {
+        tim_cfg.shift_prescaler = 10;
+    } else if (freq <= TIM_CTC_FREQ(128, 255))
+    {
+        tim_cfg.shift_prescaler = 8;
+    } else if (freq <= TIM_CTC_FREQ(64, 255))
+    {
+        tim_cfg.shift_prescaler = 7;
+    } else if (freq <= TIM_CTC_FREQ(32, 255))
+    {
+        tim_cfg.shift_prescaler = 6;
+    } else if (freq <= TIM_CTC_FREQ(8, 255))
+    {
+        tim_cfg.shift_prescaler = 5;
+    } else if (freq <= TIM_CTC_FREQ(1, 255))
+    {
+        tim_cfg.shift_prescaler = 3;
+    } else if (freq <= TIM_CTC_FREQ(1, 0))
+    {
+        tim_cfg.shift_prescaler = 0;
+    } else
+    {
+        tim_cfg.shift_prescaler = -1;
+    }
+
+    tim_cfg.top = TIM_CTC_TOP((1 << tim_cfg.shift_prescaler), freq);
+    return tim_cfg;
+}
+
+void set_tim2_cfg(tim_cfg_t tim_cfg)
+{
+    uint8_t cs = 0;
+    switch(tim_cfg.shift_prescaler)
+    {
+    case 1:
+        cs = TIM2_NO_PRESCALING;
+        break;
+    case 3:
+        cs = TIM2_PRESCALING_DIV8;
+        break;
+    case 5:
+        cs = TIM2_PRESCALING_DIV32;
+        break;
+    case 6:
+        cs = TIM2_PRESCALING_DIV64;
+        break;
+    case 7:
+        cs = TIM2_PRESCALING_DIV128;
+        break;
+    case 8:
+        cs = TIM2_PRESCALING_DIV256;
+        break;
+    case 10:
+        cs = TIM2_PRESCALING_DIV1024;
+        break;
+    default:
+        cs = TIM2_NO_CLK;
+        break;
+    }
+    set_tim2_prescaler(cs);
+    OCR2A = tim_cfg.top;
+}
+
+void pid_req_tim_status(slip_payload_t * msg)
+{
+    msg->pid |= 0x80;
+    req_tim_status_t * req = (req_tim_status_t *) msg->data;
     tim_status_t status;
-    status.tim_freq = get_tim0_freq();
-    status.cnt_freq = get_tim0_cnt_freq();
-    status.cnt = tim0_ov_cnt;
-    status.mode = get_tim0_mode();
-    status.tccr0a = TCCR0A;
-    status.tccr0b = TCCR0B;
-    status.timsk0 = TIMSK0;
-    status.gtccr = GTCCR;
-    status.tcnt0 = TCNT0;
-    memcpy(msg->data, &status, sizeof(status));
-    msg->len = sizeof(status);
+    switch(req->timer_id)
+    {
+    case 0:
+        status.tim_freq = get_tim0_freq();
+        status.cnt_freq = get_tim0_cnt_freq();
+        status.cnt = tim0_ov_cnt;
+        status.mode = get_tim0_mode();
+        status.tccra = TCCR0A;
+        status.tccrb = TCCR0B;
+        status.timsk = TIMSK0;
+        status.gtccr = GTCCR;
+        status.tcnt = TCNT0;
+        memcpy(msg->data, &status, sizeof(status));
+        msg->len = sizeof(status);
+        break;
+    case 2:
+        status.tim_freq = get_tim2_freq();
+        status.cnt_freq = get_tim2_cnt_freq();
+        status.cnt = tim2_ov_cnt;
+        status.mode = get_tim2_mode();
+        status.tccra = TCCR2A;
+        status.tccrb = TCCR2B;
+        status.timsk = TIMSK2;
+        status.gtccr = GTCCR;
+        status.tcnt = TCNT2;
+        memcpy(msg->data, &status, sizeof(status));
+        msg->len = sizeof(status);
+        break;
+    }
+
 }

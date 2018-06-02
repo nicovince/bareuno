@@ -2,6 +2,7 @@ CC=avr-gcc
 OBJCOPY=avr-objcopy
 SIZE=avr-size
 NM=avr-nm
+GENMSG=tools/genmsg/genmsg.py
 
 CFLAGS =-g
 CFLAGS =-std=c11
@@ -19,6 +20,7 @@ CFLAGS+=-D__PROG_TYPES_COMPAT__
 
 LDFLAGS =-Os
 LDFLAGS+=-Wl,--gc-sections
+LDFLAGS+=-Wl,-Map,$(BUILD_DIR)/$(TARGET_NAME).map
 LDFLAGS+=-mmcu=atmega328p
 
 INCDIR =./inc
@@ -53,10 +55,13 @@ clean:
 $(BUILD_DIR):
 	mkdir -p $(BUILD_DIR)
 
-$(BUILD_DIR)/%.d : %.c | $(BUILD_DIR)
+$(BUILD_DIR)/%.d : %.c inc/messages.h | $(BUILD_DIR)
 	$(CC) -MM $(CFLAGS) -c $< |sed 's,\(.*\)\.o[ :]*,$(BUILD_DIR)/\1.o $(BUILD_DIR)/\1.d : ,g' > $@
 
 -include $(DEPS)
+
+inc/messages.h: src/messages.yaml $(GENMSG)
+	$(GENMSG) $< --h-gen --h-dest $(shell dirname $@) --py-gen --py-dest $(shell dirname $(GENMSG))
 
 $(BUILD_DIR)/%.o: %.c | $(BUILD_DIR)
 	$(CC) $(CFLAGS) -o $@ -c $<
