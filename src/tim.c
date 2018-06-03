@@ -4,6 +4,7 @@
 #include "tim.h"
 #include "gpio.h"
 #include "messages.h"
+#include "sched.h"
 
 static uint32_t tim0_ov_cnt;
 static uint32_t tim2_ov_cnt;
@@ -258,10 +259,25 @@ ISR(TIMER0_OVF_vect)
 
 ISR(TIMER2_OVF_vect)
 {
-    if (tim2_ov_cnt-- == 0)
+    if (tim2_ov_cnt) {
+        tim2_ov_cnt--;
+    }
+}
+
+ISR(TIMER2_COMPA_vect)
+{
+    for (uint8_t i = 0; i < SCHED_MAX_CNT; ++i)
     {
-        /* Disable irq */
-        disable_tim2_irq(TOIE2);
+        if (sched_cnts[i])
+        {
+            /* Decrease registered counter */
+            (*sched_cnts[i])--;
+            if (!*sched_cnts[i])
+            {
+                /* Deregister counter which have readched 0 */
+                sched_cnts[i] = 0;
+            }
+        }
     }
 }
 
@@ -406,8 +422,6 @@ void pid_req_tim_status(slip_payload_t * msg)
         status.timsk = TIMSK0;
         status.gtccr = GTCCR;
         status.tcnt = TCNT0;
-        memcpy(msg->data, &status, sizeof(status));
-        msg->len = sizeof(status);
         break;
     case 2:
         status.tim_freq = get_tim2_freq();
@@ -419,9 +433,8 @@ void pid_req_tim_status(slip_payload_t * msg)
         status.timsk = TIMSK2;
         status.gtccr = GTCCR;
         status.tcnt = TCNT2;
-        memcpy(msg->data, &status, sizeof(status));
-        msg->len = sizeof(status);
         break;
     }
-
+    memcpy(msg->data, &status, sizeof(status));
+    msg->len = sizeof(status);
 }

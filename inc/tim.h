@@ -98,6 +98,8 @@ void set_tim0_ocra(uint8_t val);
 
 tim_cfg_t comput_tim0_freq_cfg(uint32_t freq);
 void set_tim0_cfg(tim_cfg_t tim_cfg);
+tim_cfg_t comput_tim2_freq_cfg(uint32_t freq);
+void set_tim2_cfg(tim_cfg_t tim_cfg);
 
 void set_tim0_mode(uint8_t mode);
 void set_tim2_mode(uint8_t mode);

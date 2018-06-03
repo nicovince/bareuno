@@ -7,6 +7,7 @@
 #include "slip_payload.h"
 #include "gpio.h"
 #include "tim.h"
+#include "sched.h"
 #include "messages.h"
 
 #define DO     0
@@ -115,14 +116,17 @@ int main(void)
 {
     uint8_t freq_idx = 0;
     sei();
+    uint32_t tick_1hz;
+    sched_init();
     board_pin_set_output(13);
     int16_t slip_size;
 
     /* setup timer */
     enable_tim2();
-    enable_tim2_irq((1 << TOIE2));
-    set_tim2_mode(TIM0_WGM_NORMAL);
+    enable_tim2_irq((1 << OCIE2A));
+    set_tim2_mode(TIM0_WGM_CTC);
     set_tim2_prescaler(TIM2_PRESCALING_DIV1024);
+    set_tim2_cfg(comput_tim2_freq_cfg(100));
 
     enable_tim0();
     enable_tim0_irq((1 << TOIE0));
@@ -136,6 +140,8 @@ int main(void)
     init_slip_decoder(&slip, slip_buffer, 128);
 
     set_tim0_ov_cnt(0);
+    tick_1hz = get_tim2_freq();
+    sched_register_cnt(&tick_1hz);
     set_tim2_ov_cnt(get_tim2_freq());
     uint8_t c;
     while(1)
@@ -148,8 +154,15 @@ int main(void)
             /* Rearm 1Hz event */
             set_tim2_ov_cnt(get_tim2_freq());
             /* Toggle led */
-            board_pin_toggle(13);
         }
+        if (!tick_1hz)
+        {
+            tick_1hz = 2*get_tim2_freq();
+            sched_register_cnt(&tick_1hz);
+            board_pin_toggle(13);
+
+        }
+
 
         size_t sz = usart_read(&c, 1);
         if (sz != 0) {

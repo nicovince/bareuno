@@ -39,6 +39,7 @@ vpath %.c $(SRCDIR)
 
 SRC =main.c
 SRC+=usart.c
+SRC+=sched.c
 SRC+=fifo.c
 SRC+=slip.c
 SRC+=slip_payload.c
