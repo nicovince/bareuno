@@ -4,11 +4,6 @@
 #include "slip.h"
 #include "gpio.h"
 
-#define SLIP_END 0xC0
-#define SLIP_ESC 0xDB
-#define SLIP_ESC_END 0xDC
-#define SLIP_ESC_ESC 0xDD
-
 void init_slip_decoder(slip_decoder_t *slip_handle, uint8_t *buf, uint8_t buf_size)
 {
     slip_handle->state = SLIP_WAIT_END;
@@ -104,4 +99,21 @@ int16_t slip_encode(const uint8_t *src, uint8_t *dst, int16_t len)
     }
     dst[dst_idx++] = SLIP_END;
     return dst_idx;
+}
+
+uint8_t slip_encode_byte(const uint8_t in, uint8_t dst[2])
+{
+    if (in == SLIP_END) {
+        dst[0] = SLIP_ESC;
+        dst[1] = SLIP_ESC_END;
+        return 2;
+    } else if (in == SLIP_ESC) {
+        dst[0] = SLIP_ESC;
+        dst[1] = SLIP_ESC_ESC;
+        return 2;
+    } else {
+        dst[0] = in;
+        return 1;
+    }
+    return 0;
 }

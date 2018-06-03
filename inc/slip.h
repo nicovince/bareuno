@@ -2,6 +2,12 @@
 #define __SLIP_H__
 #include <stdint.h>
 #include <stddef.h>
+
+#define SLIP_END 0xC0
+#define SLIP_ESC 0xDB
+#define SLIP_ESC_END 0xDC
+#define SLIP_ESC_ESC 0xDD
+
 typedef enum slip_state_e {
     SLIP_WAIT_END,
     SLIP_ESCAPING,
@@ -52,4 +58,14 @@ void reset_slip_decoder(slip_decoder_t *slip_handle);
  * @return Size of encoded data
  */
 int16_t slip_encode(const uint8_t *src, uint8_t *dst, int16_t len);
+
+/**
+ * @brief Encode a single byte for slip protocol
+ *
+ * @param in Byte to encode
+ * @param dst[2] Buffer where encoded byte is stored
+ *
+ * @return Size of encoded data (1 or 2)
+ */
+uint8_t slip_encode_byte(const uint8_t in, uint8_t dst[2]);
 #endif // __SLIP_H__

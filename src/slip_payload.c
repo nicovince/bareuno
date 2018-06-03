@@ -63,6 +63,11 @@ unsigned short CRCCCITT(unsigned char *data, size_t length, unsigned short seed,
 
 }
 
+void update_crc(slip_payload_t * slip_payload)
+{
+    slip_payload->crc = CRCCCITT((unsigned char *)slip_payload, slip_payload->len + DATA_OFFSET, 0xFFFF, 0x0);
+}
+
 int8_t unpack_slip_payload(uint8_t *raw_slip_payload, slip_payload_t *slip_payload)
 {
     slip_payload->pid = raw_slip_payload[PID_OFFSET];

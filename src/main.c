@@ -61,8 +61,6 @@ uint32_t ode_a_la_joie[] = {
 
 slip_decoder_t slip;
 uint8_t slip_buffer[128];
-uint8_t slip_encoded[256];
-uint8_t raw_slip_payload[MAX_SLIP_PAYLOAD];
 slip_payload_t slip_payload;
 
 void default_slip_callback(slip_payload_t *msg)
@@ -75,22 +73,42 @@ void default_slip_callback(slip_payload_t *msg)
     memcpy(msg->data, &ack, sizeof(slip_error_t));
 }
 
-void send_pid(uint8_t pid)
-{
-    static uint8_t cnt = 0;
-    slip_payload.pid = pid;
-    slip_payload.seq = cnt++;
-    slip_payload.len = 0;
-    uint16_t slip_payload_size = pack_slip_payload(&slip_payload, raw_slip_payload);
-    uint8_t tx_slip_size = slip_encode(raw_slip_payload, slip_encoded, slip_payload_size);
-    usart_write(slip_encoded, tx_slip_size);
-}
-
 void send_slip_msg(slip_payload_t * msg)
 {
-    uint16_t slip_payload_size = pack_slip_payload(msg, raw_slip_payload);
-    uint8_t tx_slip_size = slip_encode(raw_slip_payload, slip_encoded, slip_payload_size);
-    usart_write(slip_encoded, tx_slip_size);
+    /* Byte to send, may be escaped */
+    uint8_t encoded_byte[2];
+    /* Size of encoded byte (1 or 2) */
+    uint8_t sz;
+    /* Update CRC in msg */
+    update_crc(msg);
+    /* Start */
+    encoded_byte[0] = SLIP_END;
+    usart_write(encoded_byte, 1);
+    /* PID */
+    sz = slip_encode_byte(msg->pid, encoded_byte);
+    usart_write(encoded_byte, sz);
+    /* SEQ */
+    sz = slip_encode_byte(msg->seq, encoded_byte);
+    usart_write(encoded_byte, sz);
+    /* LEN */
+    sz = slip_encode_byte(msg->len, encoded_byte);
+    usart_write(encoded_byte, sz);
+
+    /* Datas */
+    for (int i = 0; i < msg->len; ++i)
+    {
+        sz = slip_encode_byte(msg->data[i], encoded_byte);
+        usart_write(encoded_byte, sz);
+    }
+    /* CRC LSB then MSB */
+    sz = slip_encode_byte((uint8_t)(msg->crc & 0xFF), encoded_byte);
+    usart_write(encoded_byte, sz);
+    sz = slip_encode_byte((uint8_t)((msg->crc & 0xFF00) >> 8), encoded_byte);
+    usart_write(encoded_byte, sz);
+
+    /* End */
+    encoded_byte[0] = SLIP_END;
+    usart_write(encoded_byte, 1);
 }
 
 int main(void)
