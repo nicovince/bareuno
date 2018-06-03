@@ -116,10 +116,6 @@ int main(void)
     uint8_t freq_idx = 0;
     sei();
     board_pin_set_output(13);
-    board_pin_set_output(YELLOW_LED);
-    board_pin_clear(YELLOW_LED);
-    board_pin_set_output(GREEN_LED);
-    board_pin_set(GREEN_LED);
     int16_t slip_size;
 
     /* setup timer */
@@ -134,11 +130,9 @@ int main(void)
     set_tim0_com_cha(TIM0_NON_PWM_TOGGLE_OC_MATCH);
     set_tim0_cfg(comput_tim0_freq_cfg(ode_a_la_joie[freq_idx]));
 
-    board_pin_clear(13);
 
 
     setup_usart(BAUD_9600);
-    board_pin_clear(13);
     init_slip_decoder(&slip, slip_buffer, 128);
 
     set_tim0_ov_cnt(0);
@@ -156,24 +150,6 @@ int main(void)
             /* Toggle led */
             board_pin_toggle(13);
         }
-        /* Update led based on slip state */
-        board_pin_clear(GREEN_LED);
-        board_pin_clear(GREEN_LED);
-        switch(slip.state)
-        {
-        case SLIP_WAIT_END:
-            board_pin_set(YELLOW_LED);
-            board_pin_clear(GREEN_LED);
-            break;
-        case SLIP_STORE_INCOMING:
-            board_pin_set(GREEN_LED);
-            board_pin_clear(YELLOW_LED);
-            break;
-        default:
-            board_pin_clear(GREEN_LED);
-            board_pin_clear(YELLOW_LED);
-        }
-
 
         size_t sz = usart_read(&c, 1);
         if (sz != 0) {
@@ -182,7 +158,6 @@ int main(void)
                 /* Reset empty message */
                 reset_slip_decoder(&slip);
             } else if (slip_size > 0) {
-                board_pin_set(GREEN_LED);
                 int8_t crc_ok = unpack_slip_payload(slip.buf, &slip_payload);
                 /* TODO Check length of payload data is lesser than slip message length */
                 if (crc_ok)
