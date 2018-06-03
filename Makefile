@@ -4,6 +4,12 @@ SIZE=avr-size
 NM=avr-nm
 GENMSG=tools/genmsg/genmsg.py
 
+ifdef VERBOSE
+V=
+else
+V=@
+endif
+
 CFLAGS =-g
 CFLAGS =-std=c11
 CFLAGS+=-Os
@@ -50,38 +56,41 @@ all: $(TARGET)
 .PHONY: clean
 
 clean:
-	rm -Rf $(BUILD_DIR)
+	$(V)rm -Rf $(BUILD_DIR)
 
 $(BUILD_DIR):
-	mkdir -p $(BUILD_DIR)
+	$(V)mkdir -p $(BUILD_DIR)
 
 $(BUILD_DIR)/%.d : %.c inc/messages.h | $(BUILD_DIR)
-	$(CC) -MM $(CFLAGS) -c $< |sed 's,\(.*\)\.o[ :]*,$(BUILD_DIR)/\1.o $(BUILD_DIR)/\1.d : ,g' > $@
+	$(V)$(CC) -MM $(CFLAGS) -c $< |sed 's,\(.*\)\.o[ :]*,$(BUILD_DIR)/\1.o $(BUILD_DIR)/\1.d : ,g' > $@
 
 -include $(DEPS)
 
 inc/messages.h: src/messages.yaml $(GENMSG)
-	$(GENMSG) $< --h-gen --h-dest $(shell dirname $@) --py-gen --py-dest $(shell dirname $(GENMSG))
+	$(V)$(GENMSG) $< --h-gen --h-dest $(shell dirname $@) --py-gen --py-dest $(shell dirname $(GENMSG))
 
 $(BUILD_DIR)/%.o: %.c | $(BUILD_DIR)
-	$(CC) $(CFLAGS) -o $@ -c $<
+	@echo "Compiling $<"
+	$(V)$(CC) $(CFLAGS) -o $@ -c $<
 
 
 $(BUILD_DIR)/$(TARGET_NAME).elf: $(OBJS)
-	$(CC) $(LDFLAGS) $(OBJS) -o $@
-	$(SIZE) $@
+	@echo "Linking $@"
+	$(V)$(CC) $(LDFLAGS) $(OBJS) -o $@
+	$(V)$(SIZE) $@
 
 %.hex: %.elf
-	$(OBJCOPY) -O ihex -R .eeprom $< $@
+	$(V)$(OBJCOPY) -O ihex -R .eeprom $< $@
 
 
 .PHONY: flash
 flash: $(TARGET)
-	avrdude -F -V -c arduino -p ATMEGA328P -P /dev/ttyACM0 -b 115200 -U flash:w:$(TARGET)
+	@echo "Flash $<"
+	$(V)avrdude -F -V -c arduino -p ATMEGA328P -P /dev/ttyACM0 -b 115200 -U flash:w:$(TARGET)
 	
 .PHONY: symbols_size
 symbols_size: $(TARGET)
-	$(NM) --print-size --size-sort --radix=d --synthetic $<
+	$(V)$(NM) --print-size --size-sort --radix=d --synthetic $<
 	
 print-%  : ; @echo $* = $($*)
 
