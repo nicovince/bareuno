@@ -20,7 +20,6 @@ typedef struct {
 #pragma pack(pop)
 typedef void (*slip_callback_t)(slip_payload_t *msg);
 
-uint16_t pack_slip_payload(slip_payload_t *slip_payload, uint8_t *raw_slip_payload);
-void update_crc(slip_payload_t * slip_payload);
+uint16_t compute_crc(slip_payload_t * slip_payload);
 int8_t unpack_slip_payload(uint8_t *raw_slip_payload, slip_payload_t *slip_payload);
 #endif // __SLIP_PAYLOAD_H__

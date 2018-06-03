@@ -80,7 +80,7 @@ void send_slip_msg(slip_payload_t * msg)
     /* Size of encoded byte (1 or 2) */
     uint8_t sz;
     /* Update CRC in msg */
-    update_crc(msg);
+    msg->crc = compute_crc(msg);
     /* Start */
     encoded_byte[0] = SLIP_END;
     usart_write(encoded_byte, 1);
