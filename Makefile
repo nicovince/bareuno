@@ -42,6 +42,7 @@ SRC+=usart.c
 SRC+=fifo.c
 SRC+=slip.c
 SRC+=slip_payload.c
+SRC+=crc.c
 SRC+=gpio.c
 SRC+=tim.c
 
