@@ -63,8 +63,8 @@
 #define TIM2_CS_POS CS20
 #define TIM2_CS_MASK ((1 << CS20) | (1 << CS21) | (1 << CS22))
 
-#define TIM_CTC_FREQ(n, top) (F_CPU/(2*(uint32_t)n*(1+top)))
-#define TIM_CTC_TOP(n, freq) (F_CPU/(2*n*freq) -1)
+#define TIM_CTC_FREQ(n, top) (F_CPU/((uint32_t)n*(1+top)))
+#define TIM_CTC_TOP(n, freq) (F_CPU/(n*freq) -1)
 
 typedef struct {
     int8_t shift_prescaler;

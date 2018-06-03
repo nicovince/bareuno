@@ -126,7 +126,7 @@ int main(void)
     enable_tim2_irq((1 << OCIE2A));
     set_tim2_mode(TIM0_WGM_CTC);
     set_tim2_prescaler(TIM2_PRESCALING_DIV1024);
-    set_tim2_cfg(comput_tim2_freq_cfg(100));
+    set_tim2_cfg(comput_tim2_freq_cfg(1000));
 
     enable_tim0();
     enable_tim0_irq((1 << TOIE0));
@@ -157,7 +157,7 @@ int main(void)
         }
         if (!tick_1hz)
         {
-            tick_1hz = 2*get_tim2_freq();
+            tick_1hz = get_tim2_freq();
             sched_register_cnt(&tick_1hz);
             board_pin_toggle(13);
 

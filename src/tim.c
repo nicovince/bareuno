@@ -148,7 +148,7 @@ uint32_t get_8bit_tim_freq(uint32_t cnt_freq, uint8_t mode, uint8_t ocr_ch_a)
         break;
     case TIM0_WGM_CTC:
         top = ocr_ch_a;
-        tim_freq = cnt_freq / (2*(1 + top));
+        tim_freq = cnt_freq / ((1 + top));
         break;
     case TIM0_WGM_FAST_PWM_TOP_OCR:
         top = ocr_ch_a;
@@ -156,6 +156,16 @@ uint32_t get_8bit_tim_freq(uint32_t cnt_freq, uint8_t mode, uint8_t ocr_ch_a)
         break;
     default:
         return -1;
+    }
+    return tim_freq;
+}
+
+uint32_t get_8bit_wf_freq(uint32_t cnt_freq, uint8_t mode, uint8_t ocr_ch_a)
+{
+    uint32_t tim_freq = get_8bit_tim_freq(cnt_freq, mode, ocr_ch_a);
+    if (mode == TIM0_WGM_CTC)
+    {
+        return tim_freq/2;
     }
     return tim_freq;
 }
