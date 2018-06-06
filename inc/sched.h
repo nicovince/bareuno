@@ -2,7 +2,8 @@
 #define __SCHED_H__
 #include <stdint.h>
 #define SCHED_MAX_CNT 16
-extern uint32_t *sched_cnts[SCHED_MAX_CNT];
+#include "slip_payload.h"
+extern volatile uint32_t sched_tick_cnt;
 /**
  * @brief Initialize sched_cnts
  */
@@ -15,4 +16,10 @@ void sched_init(void);
  * @return 0 on success, -1 if counter could not be registered
  */
 int8_t sched_register_cnt(uint32_t *cnt);
+
+/**
+ * @brief Update scheduler counters
+ */
+void sched_update(void);
+void pid_req_sched(slip_payload_t *msg);
 #endif // __SCHED_H__

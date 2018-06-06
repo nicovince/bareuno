@@ -276,19 +276,7 @@ ISR(TIMER2_OVF_vect)
 
 ISR(TIMER2_COMPA_vect)
 {
-    for (uint8_t i = 0; i < SCHED_MAX_CNT; ++i)
-    {
-        if (sched_cnts[i])
-        {
-            /* Decrease registered counter */
-            (*sched_cnts[i])--;
-            if (!*sched_cnts[i])
-            {
-                /* Deregister counter which have readched 0 */
-                sched_cnts[i] = 0;
-            }
-        }
-    }
+    sched_tick_cnt++;
 }
 
 tim_cfg_t comput_tim0_freq_cfg(uint32_t freq)

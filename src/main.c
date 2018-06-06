@@ -117,6 +117,7 @@ int main(void)
     uint8_t freq_idx = 0;
     sei();
     uint32_t tick_1hz;
+    uint32_t tick_5hz;
     sched_init();
     board_pin_set_output(13);
     int16_t slip_size;
@@ -143,26 +144,30 @@ int main(void)
     tick_1hz = get_tim2_freq();
     sched_register_cnt(&tick_1hz);
     set_tim2_ov_cnt(get_tim2_freq());
+    tick_5hz = get_tim2_freq()/5;
+    sched_register_cnt(&tick_5hz);
     uint8_t c;
     while(1)
     {
+        if (sched_tick_cnt)
+        {
+            sched_update();
+        }
 
-        if (get_tim2_ov_cnt() == 0)
+        if (!tick_1hz)
         {
             freq_idx = (freq_idx + 1) % (sizeof(ode_a_la_joie)/sizeof(ode_a_la_joie[0]));
             set_tim0_cfg(comput_tim0_freq_cfg(freq[ode_a_la_joie[freq_idx]]));
-            /* Rearm 1Hz event */
-            set_tim2_ov_cnt(get_tim2_freq());
-            /* Toggle led */
-        }
-        if (!tick_1hz)
-        {
+            /* Rearm tick */
             tick_1hz = get_tim2_freq();
             sched_register_cnt(&tick_1hz);
             board_pin_toggle(13);
-
         }
-
+        if (!tick_5hz)
+        {
+            tick_5hz = get_tim2_freq()/5;
+            sched_register_cnt(&tick_5hz);
+        }
 
         size_t sz = usart_read(&c, 1);
         if (sz != 0) {
@@ -181,6 +186,19 @@ int main(void)
                     case REQ_TIM_STATUS_ID:
                         pid_req_tim_status(&slip_payload);
                         break;
+                    case REQ_SCHED_ID:
+                        pid_req_sched(&slip_payload);
+                        break;
+                    case REQ_DBG_ID:
+                        {
+                            ack_dbg_t ack;
+                            slip_payload.pid |= 0x80;
+                            slip_payload.len = sizeof(ack);
+                            ack.tick_1hz = tick_1hz;
+                            ack.tim_freq = get_tim2_freq();
+                            memcpy(slip_payload.data, &ack, sizeof(ack));
+                            break;
+                        }
                     default:
                         default_slip_callback(&slip_payload);
                         break;

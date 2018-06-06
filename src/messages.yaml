@@ -245,3 +245,28 @@ messages:
   - name: status
     type: tim_status
     desc: "Timer status"
+
+- name: req_sched
+  id: 3
+  desc: "Request Scheduler counters"
+- name: ack_sched
+  id: 0x83
+  desc: "Scheduler counters requested"
+  fields:
+  - name: counters
+    type: uint32_t[16]
+    desc: "Counter values"
+
+- name: req_dbg
+  id: 4
+  desc: "Debug request"
+- name: ack_dbg
+  id: 0x84
+  desc: "Debug reply"
+  fields:
+  - name: tick_1hz
+    type: uint32_t
+    desc: "One Hertz counter"
+  - name: tim_freq
+    type: uint32_t
+    desc: "tim freq"
