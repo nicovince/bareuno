@@ -121,6 +121,9 @@ int main(void)
     sched_init();
     board_pin_set_output(13);
     int16_t slip_size;
+    const uint8_t beat = 90;
+    const uint32_t tick_tune_cnt_val = 1000*beat/60;
+    uint32_t tick_tune = 0;
 
     /* setup timer */
     enable_tim2();
@@ -128,6 +131,7 @@ int main(void)
     set_tim2_mode(TIM0_WGM_CTC);
     set_tim2_prescaler(TIM2_PRESCALING_DIV1024);
     set_tim2_cfg(comput_tim2_freq_cfg(1000));
+    board_pin_set_output(6);
 
     enable_tim0();
     enable_tim0_irq((1 << TOIE0));
@@ -156,8 +160,6 @@ int main(void)
 
         if (!tick_1hz)
         {
-            freq_idx = (freq_idx + 1) % (sizeof(ode_a_la_joie)/sizeof(ode_a_la_joie[0]));
-            set_tim0_cfg(comput_tim0_freq_cfg(freq[ode_a_la_joie[freq_idx]]));
             /* Rearm tick */
             tick_1hz = get_tim2_freq();
             sched_register_cnt(&tick_1hz);
@@ -165,8 +167,17 @@ int main(void)
         }
         if (!tick_5hz)
         {
+            /* Rearm tick */
             tick_5hz = get_tim2_freq()/5;
             sched_register_cnt(&tick_5hz);
+        }
+        if (!tick_tune)
+        {
+            freq_idx = (freq_idx + 1) % (sizeof(ode_a_la_joie)/sizeof(ode_a_la_joie[0]));
+            set_tim0_cfg(comput_tim0_freq_cfg(freq[ode_a_la_joie[freq_idx]]));
+            /* Rearm tick */
+            tick_tune = tick_tune_cnt_val;
+            sched_register_cnt(&tick_tune);
         }
 
         size_t sz = usart_read(&c, 1);
