@@ -9,19 +9,7 @@
 #include "tim.h"
 #include "sched.h"
 #include "messages.h"
-
-#define DO     0
-#define DO_B   1
-#define RE     2
-#define RE_B   3
-#define MI     4
-#define FA     5
-#define FA_B   6
-#define SOL    7
-#define SOL_B  8
-#define LA     9
-#define LA_B  10
-#define SI    11
+#include "melody.h"
 
 uint32_t freq[] = {
     262, /* do */
@@ -121,8 +109,8 @@ int main(void)
     sched_init();
     board_pin_set_output(13);
     int16_t slip_size;
-    const uint8_t beat = 90;
-    const uint32_t tick_tune_cnt_val = 1000*beat/60;
+    const uint8_t tempo = 60;
+    const uint32_t tick_tune_cnt_val = 1000*(uint32_t)tempo/60;
     uint32_t tick_tune = 0;
 
     /* setup timer */
@@ -174,7 +162,12 @@ int main(void)
         if (!tick_tune)
         {
             freq_idx = (freq_idx + 1) % (sizeof(ode_a_la_joie)/sizeof(ode_a_la_joie[0]));
-            set_tim0_cfg(comput_tim0_freq_cfg(freq[ode_a_la_joie[freq_idx]]));
+            note_t note = {
+                .name = ode_a_la_joie[freq_idx],
+                .octave = 4,
+                .length = BLANCHE};
+            //set_tim0_cfg(comput_tim0_freq_cfg(freq[ode_a_la_joie[freq_idx]]));
+            play_note(&note, &tick_tune);
             /* Rearm tick */
             tick_tune = tick_tune_cnt_val;
             sched_register_cnt(&tick_tune);

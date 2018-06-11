@@ -47,6 +47,8 @@ SRC+=crc.c
 SRC+=gpio.c
 SRC+=tim.c
 
+SRC+=melody.c
+
 OBJS=$(addprefix $(BUILD_DIR)/, $(subst .c,.o,$(SRC)))
 DEPS=$(addprefix $(BUILD_DIR)/, $(subst .c,.d,$(SRC)))
 
