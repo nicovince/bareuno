@@ -109,8 +109,6 @@ int main(void)
     sched_init();
     board_pin_set_output(13);
     int16_t slip_size;
-    const uint8_t tempo = 60;
-    const uint32_t tick_tune_cnt_val = 1000*(uint32_t)tempo/60;
     uint32_t tick_tune = 0;
 
     /* setup timer */
@@ -164,13 +162,9 @@ int main(void)
             freq_idx = (freq_idx + 1) % (sizeof(ode_a_la_joie)/sizeof(ode_a_la_joie[0]));
             note_t note = {
                 .name = ode_a_la_joie[freq_idx],
-                .octave = 4,
-                .length = BLANCHE};
-            //set_tim0_cfg(comput_tim0_freq_cfg(freq[ode_a_la_joie[freq_idx]]));
+                .octave = 3,
+                .length = CROCHE};
             play_note(&note, &tick_tune);
-            /* Rearm tick */
-            tick_tune = tick_tune_cnt_val;
-            sched_register_cnt(&tick_tune);
         }
 
         size_t sz = usart_read(&c, 1);
