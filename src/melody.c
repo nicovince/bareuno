@@ -2,7 +2,16 @@
 #include "tim.h"
 #include "sched.h"
 #include "messages.h"
+#include "fifo.h"
+#include <string.h>
+
+#define NUM_NOTES_MAX 4
+
+static fifo_t notes_fifo;
+static note_t notes_array[NUM_NOTES_MAX];
+
 static uint32_t get_note_freq(note_name_t note_name, uint8_t octave);
+static uint32_t get_note_length(note_length_t note_length, uint16_t tempo);
 
 static uint32_t get_note_freq(note_name_t note_name, uint8_t octave)
 {
@@ -64,10 +73,29 @@ static uint32_t get_note_length(note_length_t note_length, uint16_t tempo)
     return shortest_len * (1 << (note_length_END -1 - note_length));
 }
 
+void melody_init(void)
+{
+    init_fifo(&notes_fifo, sizeof(note_t), NUM_NOTES_MAX, notes_array);
+}
+
 void play_note(note_t * note, uint32_t *cnt)
 {
     uint32_t freq = get_note_freq(note->name, note->octave);
     *cnt = get_note_length(note->length, 60 /*tempo*/);
     sched_register_cnt(cnt);
     set_tim0_cfg(comput_tim0_freq_cfg(freq));
+}
+
+void pid_note(slip_payload_t *msg)
+{
+    ack_note_t ack;
+    if (!is_full(&notes_fifo)) {
+        push(&notes_fifo, msg->data);
+        ack.status = level(&notes_fifo);
+    } else {
+        ack.status = 0;
+    }
+    msg->pid |= 0x80;
+    msg->len = sizeof(ack_note_t);
+    memcpy(&msg->data, &ack, sizeof(ack_note_t));
 }

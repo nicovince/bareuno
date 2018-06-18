@@ -126,7 +126,7 @@ int main(void)
     set_tim0_cfg(comput_tim0_freq_cfg(ode_a_la_joie[freq_idx]));
 
 
-
+    /* Initialize uart and slip decoder */
     setup_usart(BAUD_9600);
     init_slip_decoder(&slip, slip_buffer, 128);
 
@@ -136,6 +136,9 @@ int main(void)
     set_tim2_ov_cnt(get_tim2_freq());
     tick_5hz = get_tim2_freq()/5;
     sched_register_cnt(&tick_5hz);
+
+    /* Initialize melody */
+    melody_init();
     uint8_t c;
     while(1)
     {
@@ -181,6 +184,9 @@ int main(void)
                     /* Send request reply */
                     switch(slip_payload.pid)
                     {
+                    case NOTE_ID:
+                        pid_note(&slip_payload);
+                        break;
                     case REQ_TIM_STATUS_ID:
                         pid_req_tim_status(&slip_payload);
                         break;

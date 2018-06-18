@@ -228,6 +228,13 @@ messages:
     type: uint8_t
     enum: note_length
     desc: "Length of musical note (black, white, ...)"
+- name: ack_note
+  id: 0x81
+  desc: "Reply to note message"
+  fields:
+  - name: status
+    type: uint8_t
+    desc: "Boolean status indicating if note has been recorded in program memory"
 
 - name: req_tim_status
   id: 2
