@@ -158,6 +158,15 @@ enums:
     value: 2
     desc: "Timer 2 (8bit)"
 
+- name: melody_src
+  desc: "Melody Source"
+  entries:
+  - entry: program
+    value: 0
+    desc: "Melody read from program memory"
+  - entry: fifo
+    value: 1
+    desc: "Melody read from fifo, filled from computer program"
 
 types:
 - name: tim_status
@@ -277,3 +286,18 @@ messages:
   - name: tim_freq
     type: uint32_t
     desc: "tim freq"
+
+- name: req_melody_conf
+  id: 5
+  desc: "Set melody configuration"
+  fields:
+  - name: source
+    type: uint8_t
+    desc: "Source of melody (program, fifo, ...)"
+    enum: melody_src
+  - name: tempo
+    type: uint8_t
+    desc: "Tempo of melody (noire/minute)"
+- name: ack_melody_conf
+  id: 0x85
+  desc: "Acknowledge melody source"

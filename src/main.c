@@ -162,11 +162,18 @@ int main(void)
         }
         if (!tick_tune)
         {
-            freq_idx = (freq_idx + 1) % (sizeof(ode_a_la_joie)/sizeof(ode_a_la_joie[0]));
-            note_t note = {
-                .name = ode_a_la_joie[freq_idx],
-                .octave = 3,
-                .length = CROCHE};
+            note_t note;
+            melody_src_t src = melody_get_src();
+            if (src == PROGRAM)
+            {
+                freq_idx = (freq_idx + 1) % (sizeof(ode_a_la_joie)/sizeof(ode_a_la_joie[0]));
+                note.name = ode_a_la_joie[freq_idx];
+                note.octave = 7;
+                note.length = CROCHE;
+            } else if (src == FIFO)
+            {
+                note = melody_fifo_get_note();
+            }
             play_note(&note, &tick_tune);
         }
 
@@ -203,6 +210,9 @@ int main(void)
                             memcpy(slip_payload.data, &ack, sizeof(ack));
                             break;
                         }
+                    case REQ_MELODY_CONF_ID:
+                        pid_melody_conf(&slip_payload);
+                        break;
                     default:
                         default_slip_callback(&slip_payload);
                         break;
