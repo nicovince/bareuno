@@ -9,5 +9,6 @@ void pid_melody_conf(slip_payload_t *msg);
 void melody_init(void);
 melody_src_t melody_get_src(void);
 note_t melody_fifo_get_note(void);
+uint8_t melody_fifo_empty(void);
 
 #endif // __MELOLDY_H

@@ -93,6 +93,11 @@ void play_note(note_t * note, uint32_t *cnt)
     set_tim0_cfg(comput_tim0_freq_cfg(freq));
 }
 
+uint8_t melody_fifo_empty(void)
+{
+    return is_empty(&notes_fifo);
+}
+
 note_t melody_fifo_get_note(void)
 {
     note_t note;

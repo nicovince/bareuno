@@ -170,11 +170,18 @@ int main(void)
                 note.name = ode_a_la_joie[freq_idx];
                 note.octave = 7;
                 note.length = CROCHE;
+                play_note(&note, &tick_tune);
             } else if (src == FIFO)
             {
-                note = melody_fifo_get_note();
+                if (melody_fifo_empty())
+                {
+                    set_tim0_com_cha(TIM0_NON_PWM_OC_DISCONNECTED);
+                } else {
+                    set_tim0_com_cha(TIM0_NON_PWM_TOGGLE_OC_MATCH);
+                    note = melody_fifo_get_note();
+                    play_note(&note, &tick_tune);
+                }
             }
-            play_note(&note, &tick_tune);
         }
 
         size_t sz = usart_read(&c, 1);
