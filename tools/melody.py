@@ -10,10 +10,10 @@ def msg_to_slip_payload(msg):
     return SlipPayload(msg.msg_id, 0, msg.pack())
 
 def got(fd):
-    conf = ReqMelodyConf(MelodySrc.FIFO.value, 60)
+    conf = ReqMelodyConf(MelodySrc.FIFO.value, 168)
     msg = slip_transaction(fd, SlipPayload(conf.msg_id, 0, conf.pack()), False)
     got_notes = list()
-    octave = 4
+    octave = 3
     for i in range(4):
         got_notes.append(Note(NoteName.SOL.value, octave, NoteLength.NOIRE.value))
         got_notes.append(Note(NoteName.DO.value, octave, NoteLength.NOIRE.value))
@@ -26,9 +26,11 @@ def got(fd):
         got_notes.append(Note(NoteName.MI.value, octave, NoteLength.CROCHE.value))
         got_notes.append(Note(NoteName.FA.value, octave, NoteLength.CROCHE.value))
 
-    got_notes.append(Note(NoteName.SOL.value, octave, NoteLength.RONDE.value))
+    got_notes.append(Note(NoteName.SOL.value, octave, NoteLength.BLANCHE.value))
+    got_notes.append(Note(NoteName.SOL.value, octave, NoteLength.NOIRE.value))
 
-    got_notes.append(Note(NoteName.DO.value, octave, NoteLength.RONDE.value))
+    got_notes.append(Note(NoteName.DO.value, octave, NoteLength.BLANCHE.value))
+    got_notes.append(Note(NoteName.DO.value, octave, NoteLength.NOIRE.value))
 
     got_notes.append(Note(NoteName.MI_B.value, octave, NoteLength.CROCHE.value))
     got_notes.append(Note(NoteName.FA.value, octave, NoteLength.CROCHE.value))
@@ -48,15 +50,18 @@ def got(fd):
     got_notes.append(Note(NoteName.SOL.value, octave-1, NoteLength.NOIRE.value))
     got_notes.append(Note(NoteName.SI_B.value, octave-1, NoteLength.NOIRE.value))
 
-    got_notes.append(Note(NoteName.FA.value, octave, NoteLength.RONDE.value))
+    got_notes.append(Note(NoteName.FA.value, octave, NoteLength.BLANCHE.value))
+    got_notes.append(Note(NoteName.FA.value, octave, NoteLength.NOIRE.value))
 
-    got_notes.append(Note(NoteName.DO.value, octave, NoteLength.RONDE.value))
+    got_notes.append(Note(NoteName.DO.value, octave, NoteLength.BLANCHE.value))
+    got_notes.append(Note(NoteName.DO.value, octave, NoteLength.NOIRE.value))
 
     got_notes.append(Note(NoteName.MI_B.value, octave, NoteLength.NOIRE.value))
     got_notes.append(Note(NoteName.RE.value, octave, NoteLength.NOIRE.value))
     got_notes.append(Note(NoteName.FA.value, octave, NoteLength.BLANCHE.value))
 
-    got_notes.append(Note(NoteName.SI_B.value, octave-1, NoteLength.RONDE.value))
+    got_notes.append(Note(NoteName.SI_B.value, octave-1, NoteLength.BLANCHE.value))
+    got_notes.append(Note(NoteName.SI_B.value, octave-1, NoteLength.NOIRE.value))
 
     for i in range(3):
         got_notes.append(Note(NoteName.MI_B.value, octave, NoteLength.CROCHE.value))
@@ -69,9 +74,11 @@ def got(fd):
     got_notes.append(Note(NoteName.FA.value, octave-1, NoteLength.NOIRE.value))
     got_notes.append(Note(NoteName.DO.value, octave, NoteLength.NOIRE.value))
 
-    got_notes.append(Note(NoteName.SOL.value, octave, NoteLength.RONDE.value))
+    got_notes.append(Note(NoteName.SOL.value, octave, NoteLength.BLANCHE.value))
+    got_notes.append(Note(NoteName.SOL.value, octave, NoteLength.NOIRE.value))
 
-    got_notes.append(Note(NoteName.DO.value, octave, NoteLength.RONDE.value))
+    got_notes.append(Note(NoteName.DO.value, octave, NoteLength.BLANCHE.value))
+    got_notes.append(Note(NoteName.DO.value, octave, NoteLength.NOIRE.value))
 
     got_notes.append(Note(NoteName.MI_B.value, octave, NoteLength.CROCHE.value))
     got_notes.append(Note(NoteName.FA.value, octave, NoteLength.CROCHE.value))
@@ -91,15 +98,18 @@ def got(fd):
     got_notes.append(Note(NoteName.SOL.value, octave-1, NoteLength.NOIRE.value))
     got_notes.append(Note(NoteName.SI_B.value, octave-1, NoteLength.NOIRE.value))
 
-    got_notes.append(Note(NoteName.FA.value, octave, NoteLength.RONDE.value))
+    got_notes.append(Note(NoteName.FA.value, octave, NoteLength.BLANCHE.value))
+    got_notes.append(Note(NoteName.FA.value, octave, NoteLength.NOIRE.value))
 
-    got_notes.append(Note(NoteName.SI.value, octave-1, NoteLength.RONDE.value))
+    got_notes.append(Note(NoteName.SI.value, octave-1, NoteLength.BLANCHE.value))
+    got_notes.append(Note(NoteName.SI.value, octave-1, NoteLength.NOIRE.value))
 
     got_notes.append(Note(NoteName.MI_B.value, octave, NoteLength.NOIRE.value))
     got_notes.append(Note(NoteName.RE.value, octave, NoteLength.NOIRE.value))
     got_notes.append(Note(NoteName.FA.value, octave, NoteLength.BLANCHE.value))
 
-    got_notes.append(Note(NoteName.SI.value, octave-1, NoteLength.RONDE.value))
+    got_notes.append(Note(NoteName.SI.value, octave-1, NoteLength.BLANCHE.value))
+    got_notes.append(Note(NoteName.SI.value, octave-1, NoteLength.NOIRE.value))
 
 
     got_notes.append(Note(NoteName.MI_B.value, octave, NoteLength.CROCHE.value))
@@ -118,8 +128,10 @@ def got(fd):
     got_notes.append(Note(NoteName.DO.value, octave, NoteLength.NOIRE.value))
     got_notes.append(Note(NoteName.SOL.value, octave-1, NoteLength.NOIRE.value))
 
-    got_notes.append(Note(NoteName.FA.value, octave+1, NoteLength.RONDE.value))
-    got_notes.append(Note(NoteName.DO.value, octave+1, NoteLength.RONDE.value))
+    got_notes.append(Note(NoteName.FA.value, octave+1, NoteLength.BLANCHE.value))
+    got_notes.append(Note(NoteName.FA.value, octave+1, NoteLength.NOIRE.value))
+    got_notes.append(Note(NoteName.DO.value, octave+1, NoteLength.BLANCHE.value))
+    got_notes.append(Note(NoteName.DO.value, octave+1, NoteLength.NOIRE.value))
 
     got_notes.append(Note(NoteName.MI_B.value, octave+1, NoteLength.CROCHE.value))
     got_notes.append(Note(NoteName.FA.value, octave+1, NoteLength.CROCHE.value))
