@@ -9,7 +9,7 @@
 
 static fifo_t notes_fifo;
 static note_t notes_array[NUM_NOTES_MAX];
-static melody_src_t melody_src = PROGRAM;
+static melody_src_t melody_src = NONE;
 static uint8_t tempo = 60;
 
 static uint32_t get_note_freq(note_name_t note_name, uint8_t octave);

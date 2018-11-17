@@ -62,6 +62,15 @@ void default_slip_callback(slip_payload_t *msg)
     memcpy(msg->data, &ack, sizeof(slip_error_t));
 }
 
+void buzzer_init(void)
+{
+    board_pin_set_output(6);
+    enable_tim0();
+    enable_tim0_irq((1 << TOIE0));
+    set_tim0_mode(TIM0_WGM_CTC);
+    set_tim0_com_cha(TIM0_NON_PWM_TOGGLE_OC_MATCH);
+}
+
 void send_slip_msg(slip_payload_t * msg)
 {
     /* Byte to send, may be escaped */
@@ -117,13 +126,7 @@ int main(void)
     set_tim2_mode(TIM0_WGM_CTC);
     set_tim2_prescaler(TIM2_PRESCALING_DIV1024);
     set_tim2_cfg(comput_tim2_freq_cfg(1000));
-    board_pin_set_output(6);
 
-    enable_tim0();
-    enable_tim0_irq((1 << TOIE0));
-    set_tim0_mode(TIM0_WGM_CTC);
-    set_tim0_com_cha(TIM0_NON_PWM_TOGGLE_OC_MATCH);
-    set_tim0_cfg(comput_tim0_freq_cfg(ode_a_la_joie[freq_idx]));
 
 
     /* Initialize uart and slip decoder */
@@ -218,6 +221,7 @@ int main(void)
                             break;
                         }
                     case REQ_MELODY_CONF_ID:
+                        buzzer_init();
                         pid_melody_conf(&slip_payload);
                         break;
                     default:

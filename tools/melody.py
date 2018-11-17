@@ -200,7 +200,7 @@ def main():
     serial_fd = open(args.slip_interface, "rb")
     serial_fd = serial.Serial(port=args.slip_interface, baudrate=9600)
 
-    do_si(serial_fd)
+    got(serial_fd)
 
 if __name__ == "__main__":
     main()

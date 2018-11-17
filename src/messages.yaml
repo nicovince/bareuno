@@ -167,6 +167,9 @@ enums:
   - entry: fifo
     value: 1
     desc: "Melody read from fifo, filled from computer program"
+  - entry: none
+    value: 2
+    desc: "Disable melody playback"
 
 types:
 - name: tim_status
