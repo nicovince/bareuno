@@ -7,9 +7,11 @@
 #include "slip_payload.h"
 #include "gpio.h"
 #include "tim.h"
+#include "servo.h"
 #include "sched.h"
 #include "messages.h"
 #include "melody.h"
+#include "servo.h"
 
 uint32_t freq[] = {
     262, /* do */
@@ -127,6 +129,7 @@ int main(void)
     set_tim2_prescaler(TIM2_PRESCALING_DIV1024);
     set_tim2_cfg(comput_tim2_freq_cfg(1000));
 
+    servo_init();
 
 
     /* Initialize uart and slip decoder */
@@ -223,6 +226,10 @@ int main(void)
                     case REQ_MELODY_CONF_ID:
                         buzzer_init();
                         pid_melody_conf(&slip_payload);
+                        break;
+
+                    case REQ_SERVO_CONF_ID:
+                        pid_req_servo_conf(&slip_payload);
                         break;
                     default:
                         default_slip_callback(&slip_payload);

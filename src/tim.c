@@ -176,9 +176,20 @@ void set_tim0_com_cha(uint8_t com)
     TCCR0A |= ((com & 0x3) << COM0A0);
 }
 
+void set_tim0_com_chb(uint8_t com)
+{
+    TCCR0A &= ~((1 << COM0B0) | (1 << COM0B1));
+    TCCR0A |= ((com & 0x3) << COM0B0);
+}
+
 void set_tim0_ocra(uint8_t val)
 {
     OCR0A = val;
+}
+
+void set_tim0_ocrb(uint8_t val)
+{
+    OCR0B = val;
 }
 
 void set_tim0_mode(uint8_t mode)

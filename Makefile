@@ -46,6 +46,7 @@ SRC+=slip_payload.c
 SRC+=crc.c
 SRC+=gpio.c
 SRC+=tim.c
+SRC+=servo.c
 
 SRC+=melody.c
 

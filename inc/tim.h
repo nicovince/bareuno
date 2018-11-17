@@ -96,6 +96,10 @@ void disable_tim2_irq(uint8_t irq_mask);
 void set_tim0_com_cha(uint8_t com);
 void set_tim0_ocra(uint8_t val);
 
+void set_tim0_com_chb(uint8_t com);
+void set_tim0_ocrb(uint8_t val);
+
+
 tim_cfg_t comput_tim0_freq_cfg(uint32_t freq);
 void set_tim0_cfg(tim_cfg_t tim_cfg);
 tim_cfg_t comput_tim2_freq_cfg(uint32_t freq);

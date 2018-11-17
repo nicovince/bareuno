@@ -304,3 +304,17 @@ messages:
 - name: ack_melody_conf
   id: 0x85
   desc: "Acknowledge melody source"
+
+- name: req_servo_conf
+  id: 6
+  desc: "Set servo configuration"
+  fields:
+  - name: servo0
+    type: uint8_t
+    desc: "Output compare register value to set for servo0"
+  - name: servo1
+    type: uint8_t
+    desc: "Output compare register value to set for servo1"
+- name: ack_servo_conf
+  id: 0x86
+  desc: "Ack servo configuration"
