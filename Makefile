@@ -72,7 +72,7 @@ $(BUILD_DIR)/%.d : %.c inc/messages.h | $(BUILD_DIR)
 -include $(DEPS)
 
 inc/messages.h: src/messages.yaml $(GENMSG)
-	$(V)$(GENMSG) $< --h-gen --h-dest $(shell dirname $@) --py-gen --py-dest $(shell dirname $(GENMSG))
+	$(V)$(GENMSG) $< --h-gen --h-dest $(shell dirname $@) --py-gen --py-dest $(shell dirname $(GENMSG)) --py-name messages
 
 $(BUILD_DIR)/%.o: %.c | $(BUILD_DIR)
 	@echo "Compiling $<"
